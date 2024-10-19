@@ -1,6 +1,7 @@
-package http_errors_codes
+package response
 
 const (
+	BadRequest         string = "badRequest"
 	Validation         string = "validation"
 	InvalidJSON        string = "invalidJSON"
 	RequestBodyIsEmpty string = "requestBodyIsEmpty"
