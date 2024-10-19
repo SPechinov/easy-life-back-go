@@ -3,11 +3,6 @@ module easy-life-back-go
 go 1.23.2
 
 require (
-	github.com/go-playground/validator/v10 v10.22.1
-	github.com/gorilla/mux v1.8.1
-)
-
-require (
 	github.com/asaskevich/govalidator v0.0.0-20200108200545-475eaeb16496 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
