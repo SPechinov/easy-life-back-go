@@ -2,15 +2,15 @@ package server
 
 import (
 	"easy-life-back-go/internal/server/routes/auth"
+	"easy-life-back-go/pkg/redis"
 	"github.com/labstack/echo/v4"
 )
 
-func registerRoutes(e *echo.Group) {
-	registerAuthRoutes(e)
+type RoutesParams struct {
+	echo  *echo.Group
+	redis *redis.Client
 }
 
-func registerAuthRoutes(e *echo.Group) {
-	service := auth.NewService()
-	controller := auth.NewController(service)
-	auth.RegisterRoutes(e, controller)
+func registerRoutes(params *RoutesParams) {
+	auth.RegisterRoutes(params)
 }

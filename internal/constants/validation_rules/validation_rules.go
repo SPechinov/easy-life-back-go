@@ -1,4 +1,4 @@
-package constants
+package validation_rules
 
 const (
 	LenMinName = 2

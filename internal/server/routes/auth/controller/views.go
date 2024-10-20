@@ -1,4 +1,4 @@
-package auth
+package controller
 
 type SignInData struct {
 	Name     string `json:"name" form:"name"`

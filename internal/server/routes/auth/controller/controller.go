@@ -1,9 +1,9 @@
-package auth
+package controller
 
 import (
-	"easy-life-back-go/internal/constants"
+	"easy-life-back-go/internal/constants/validation_rules"
+	"easy-life-back-go/internal/server/routes/auth/service"
 	"easy-life-back-go/internal/server/utils/response"
-	"fmt"
 	"github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v4"
@@ -11,11 +11,11 @@ import (
 )
 
 type Controller struct {
-	service *Service
+	service *service.Service
 	logger  echo.Logger
 }
 
-func NewController(service *Service) *Controller {
+func NewController(service *service.Service) *Controller {
 	return &Controller{
 		service: service,
 	}
@@ -30,16 +30,14 @@ func (controller *Controller) SignIn(ctx echo.Context) error {
 	}
 
 	err = validation.ValidateStruct(signInData,
-		validation.Field(&signInData.Name, validation.Required, validation.RuneLength(constants.LenMinName, constants.LenMaxName)),
+		validation.Field(&signInData.Name, validation.Required, validation.RuneLength(validation_rules.LenMinName, validation_rules.LenMaxName)),
 		validation.Field(&signInData.Email, validation.Required, is.Email),
-		validation.Field(&signInData.Password, validation.Required, validation.RuneLength(constants.LenMinPassword, constants.LenMaxPassword)),
+		validation.Field(&signInData.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
 	)
 
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, response.NewValidationError(err.Error()))
+		return ctx.JSON(http.StatusBadRequest, response.NewBadValidation(err.Error()))
 	}
-
-	fmt.Println("signInData: ", signInData)
 
 	return nil
 }

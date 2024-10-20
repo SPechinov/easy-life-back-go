@@ -13,7 +13,7 @@ func NewBad(code string) *Bad {
 	}
 }
 
-func NewValidationError(message string) *Bad {
+func NewBadValidation(message string) *Bad {
 	return &Bad{
 		Ok:      false,
 		Code:    Validation,
