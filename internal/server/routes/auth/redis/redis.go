@@ -1,31 +1,28 @@
 package redis
 
-import "easy-life-back-go/pkg/redis"
+import (
+	pkgRedis "easy-life-back-go/pkg/redis"
+	"time"
+)
 
-type AuthRedis interface {
-	SetRegistrationCode(code string) error
-	SetForgotRegistrationCode(code string) error
-	SetJWTPairCode(code string) error
+type Redis struct {
+	redis pkgRedis.Client
 }
 
-type authRedis struct {
-	redis *redis.Client
-}
-
-func NewRedis(redis *redis.Client) AuthRedis {
-	return &authRedis{
+func NewRedis(redis pkgRedis.Client) *Redis {
+	return &Redis{
 		redis: redis,
 	}
 }
 
-func (a *authRedis) SetRegistrationCode(code string) error {
+func (a *Redis) SetRegistrationCode(email, code string) error {
+	return a.redis.SetWithTTL(GetKeyHttpUserRegistrationCode(email), code, time.Minute*10)
+}
+
+func (a *Redis) SetForgotRegistrationCode(email, code string) error {
 	return nil
 }
 
-func (a *authRedis) SetForgotRegistrationCode(code string) error {
-	return nil
-}
-
-func (a *authRedis) SetJWTPairCode(code string) error {
+func (a *Redis) SetJWTPairCode(id, code string) error {
 	return nil
 }
