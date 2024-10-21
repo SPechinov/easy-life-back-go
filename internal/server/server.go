@@ -1,7 +1,7 @@
 package server
 
 import (
-	envInt "easy-life-back-go/internal/env"
+	envInt "easy-life-back-go/internal/pkg/env"
 	"easy-life-back-go/internal/pkg/store_codes"
 	"easy-life-back-go/internal/server/common"
 	"easy-life-back-go/pkg/store"
