@@ -23,16 +23,16 @@ func NewController(service *service.Service) *Controller {
 }
 
 func (controller *Controller) SignIn(ctx echo.Context) error {
-	signInData := new(SignInData)
+	data := new(SignInData)
 
-	err := ctx.Bind(signInData)
+	err := ctx.Bind(data)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.InvalidJSON))
+		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
 	}
 
-	err = validation.ValidateStruct(signInData,
-		validation.Field(&signInData.Email, validation.Required, is.Email),
-		validation.Field(&signInData.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
+	err = validation.ValidateStruct(data,
+		validation.Field(&data.Email, validation.Required, is.Email),
+		validation.Field(&data.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
 	)
 
 	if err != nil {
@@ -43,38 +43,66 @@ func (controller *Controller) SignIn(ctx echo.Context) error {
 }
 
 func (controller *Controller) Registration(ctx echo.Context) error {
-	registrationData := new(RegistrationData)
+	data := new(RegistrationData)
 
-	err := ctx.Bind(registrationData)
+	err := ctx.Bind(data)
 	if err != nil {
-		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.InvalidJSON))
+		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
 	}
 
-	err = validation.ValidateStruct(registrationData,
-		validation.Field(&registrationData.Name, validation.Required, validation.RuneLength(validation_rules.LenMinName, validation_rules.LenMaxName)),
-		validation.Field(&registrationData.Email, validation.Required, is.Email),
-		validation.Field(&registrationData.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
+	err = validation.ValidateStruct(data,
+		validation.Field(&data.Email, validation.Required, is.Email),
 	)
 
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfoValidation(err.Error()))
 	}
 
-	err = controller.service.Registration(registrationData.Name, registrationData.Email, registrationData.Password)
+	err = controller.service.Registration(data.Email)
 
 	if err != nil {
-		var controllerError *response.Bad
-		if errors.As(err, &controllerError) {
-			return ctx.JSON(controllerError.HttpCode, controllerError.Info)
+		var controllerErr *response.Bad
+		if errors.As(err, &controllerErr) {
+			return ctx.JSON(controllerErr.HttpCode, controllerErr.Info)
 		}
 
 		slog.Error("auth_controller_registration", "err_data", err)
-		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.SomethingHappen))
+		return ctx.JSON(http.StatusInternalServerError, response.NewBadInfo(response.CodeSomethingHappen))
 	}
 
 	return ctx.JSON(http.StatusOK, response.NewSuccess(nil))
 }
 
 func (controller *Controller) RegistrationSuccess(ctx echo.Context) error {
-	return nil
+	data := new(RegistrationSuccessData)
+
+	err := ctx.Bind(data)
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
+	}
+
+	err = validation.ValidateStruct(data,
+		validation.Field(&data.Email, validation.Required, is.Email),
+		validation.Field(&data.Name, validation.Required, validation.RuneLength(validation_rules.LenMinName, validation_rules.LenMaxName)),
+		validation.Field(&data.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
+		validation.Field(&data.Code, validation.Required, validation.RuneLength(validation_rules.LenRegistrationCode, validation_rules.LenRegistrationCode)),
+	)
+
+	if err != nil {
+		return ctx.JSON(http.StatusBadRequest, response.NewBadInfoValidation(err.Error()))
+	}
+
+	err = controller.service.RegistrationSuccess(data.Name, data.Email, data.Password, data.Code)
+
+	if err != nil {
+		var controllerErr *response.Bad
+		if errors.As(err, &controllerErr) {
+			return ctx.JSON(controllerErr.HttpCode, controllerErr.Info)
+		}
+
+		slog.Error("auth_controller_registration_success", "err_data", err)
+		return ctx.JSON(http.StatusInternalServerError, response.NewBadInfo(response.CodeSomethingHappen))
+	}
+
+	return ctx.JSON(http.StatusOK, response.NewSuccess(nil))
 }

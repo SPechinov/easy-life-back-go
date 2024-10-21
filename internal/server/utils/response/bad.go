@@ -28,7 +28,7 @@ func NewBad(httpCode int, code string) *Bad {
 func NewBadInfoValidation(message string) *Info {
 	return &Info{
 		Ok:      false,
-		Code:    Validation,
+		Code:    CodeValidation,
 		Message: message,
 	}
 }

@@ -1,8 +1,10 @@
 package response
 
 const (
-	BadRequest      string = "badRequest"
-	Validation      string = "validation"
-	InvalidJSON     string = "invalidJSON"
-	SomethingHappen string = "somethingHappen"
+	CodeBadRequest          string = "badRequest"
+	CodeValidation          string = "validation"
+	CodeInvalidJSON         string = "invalidJSON"
+	CodeInvalidCode         string = "invalidCode"
+	CodeMaxAttemptsExceeded string = "maxAttemptsExceeded"
+	CodeSomethingHappen     string = "somethingHappen"
 )

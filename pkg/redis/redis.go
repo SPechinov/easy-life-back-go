@@ -10,6 +10,9 @@ type Client interface {
 	Set(key string, value interface{}) error
 	SetWithTTL(key string, value interface{}, ttl time.Duration) error
 	Get(key string) (string, error)
+	Del(key string) error
+	SetCodeWithTTL(key, code string, attempt int, time time.Duration) error
+	GetCodeWithTTL(key string) (string, int, error)
 }
 
 var ctx = context.Background()
@@ -41,4 +44,9 @@ func (r *redisClient) SetWithTTL(key string, value interface{}, ttl time.Duratio
 func (r *redisClient) Get(key string) (string, error) {
 	val, err := r.client.Get(ctx, key).Result()
 	return val, err
+}
+
+func (r *redisClient) Del(key string) error {
+	_, err := r.client.Del(ctx, key).Result()
+	return err
 }

@@ -15,14 +15,27 @@ func NewRedis(redis pkgRedis.Client) *Redis {
 	}
 }
 
-func (a *Redis) SetRegistrationCode(email, code string) error {
-	return a.redis.SetWithTTL(GetKeyHttpUserRegistrationCode(email), code, time.Minute*10)
+func (r *Redis) SetRegistrationCode(email, code string, attempt int) error {
+	return r.redis.SetCodeWithTTL(
+		GetKeyUserRegistrationCode(email),
+		code,
+		attempt,
+		time.Minute*10,
+	)
 }
 
-func (a *Redis) SetForgotRegistrationCode(email, code string) error {
+func (r *Redis) GetRegistrationCode(email string) (string, int, error) {
+	return r.redis.GetCodeWithTTL(GetKeyUserRegistrationCode(email))
+}
+
+func (r *Redis) DelRegistrationCode(email string) error {
+	return r.redis.Del(GetKeyUserRegistrationCode(email))
+}
+
+func (r *Redis) SetForgotRegistrationCode(email, code string) error {
 	return nil
 }
 
-func (a *Redis) SetJWTPairCode(id, code string) error {
+func (r *Redis) SetJWTPairCode(id, code string) error {
 	return nil
 }
