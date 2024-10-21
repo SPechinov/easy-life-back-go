@@ -9,10 +9,10 @@ import (
 )
 
 type Service struct {
-	redis *redis.Redis
+	redis *redis.Store
 }
 
-func NewService(redis *redis.Redis) *Service {
+func NewService(redis *redis.Store) *Service {
 	return &Service{
 		redis: redis,
 	}

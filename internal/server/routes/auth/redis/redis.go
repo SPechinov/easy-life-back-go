@@ -1,22 +1,25 @@
 package redis
 
 import (
-	pkgRedis "easy-life-back-go/pkg/redis"
+	"easy-life-back-go/internal/pkg/store_codes"
+	pkgStore "easy-life-back-go/pkg/store"
 	"time"
 )
 
-type Redis struct {
-	redis pkgRedis.Client
+type Store struct {
+	store      pkgStore.Store
+	storeCodes store_codes.StoreCodes
 }
 
-func NewRedis(redis pkgRedis.Client) *Redis {
-	return &Redis{
-		redis: redis,
+func NewRedis(redis pkgStore.Store, storeCodes store_codes.StoreCodes) *Store {
+	return &Store{
+		store:      redis,
+		storeCodes: storeCodes,
 	}
 }
 
-func (r *Redis) SetRegistrationCode(email, code string, attempt int) error {
-	return r.redis.SetCodeWithTTL(
+func (r *Store) SetRegistrationCode(email, code string, attempt int) error {
+	return r.storeCodes.SetWithTTL(
 		GetKeyUserRegistrationCode(email),
 		code,
 		attempt,
@@ -24,18 +27,18 @@ func (r *Redis) SetRegistrationCode(email, code string, attempt int) error {
 	)
 }
 
-func (r *Redis) GetRegistrationCode(email string) (string, int, error) {
-	return r.redis.GetCodeWithTTL(GetKeyUserRegistrationCode(email))
+func (r *Store) GetRegistrationCode(email string) (string, int, error) {
+	return r.storeCodes.GetWithTTL(GetKeyUserRegistrationCode(email))
 }
 
-func (r *Redis) DelRegistrationCode(email string) error {
-	return r.redis.Del(GetKeyUserRegistrationCode(email))
+func (r *Store) DelRegistrationCode(email string) error {
+	return r.store.Del(GetKeyUserRegistrationCode(email))
 }
 
-func (r *Redis) SetForgotRegistrationCode(email, code string) error {
+func (r *Store) SetForgotRegistrationCode(email, code string) error {
 	return nil
 }
 
-func (r *Redis) SetJWTPairCode(id, code string) error {
+func (r *Store) SetJWTPairCode(id, code string) error {
 	return nil
 }

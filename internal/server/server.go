@@ -2,8 +2,9 @@ package server
 
 import (
 	envInt "easy-life-back-go/internal/env"
+	"easy-life-back-go/internal/pkg/store_codes"
 	"easy-life-back-go/internal/server/common"
-	"easy-life-back-go/pkg/redis"
+	"easy-life-back-go/pkg/store"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"io"
@@ -17,12 +18,13 @@ func Start() {
 		slog.Error(err.Error())
 	}
 
-	// Start redis
-	r := redis.NewClient(
+	// Start store
+	s := store.NewClient(
 		fmt.Sprintf("%v:%v", env.Redis.Host, env.Redis.Port),
 		env.Redis.Password,
 		env.Redis.DB,
 	)
+	sCodes := store_codes.NewStoreCodes(s)
 	slog.Info("Redis started")
 
 	// Get echo and disable echo logger
@@ -31,8 +33,9 @@ func Start() {
 
 	// Start routing
 	registerRoutes(&common.RoutesParams{
-		Echo:  e.Group("/api"),
-		Redis: r,
+		Echo:       e.Group("/api"),
+		Store:      s,
+		StoreCodes: sCodes,
 	})
 
 	// Start server

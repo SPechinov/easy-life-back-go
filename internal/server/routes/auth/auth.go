@@ -9,7 +9,7 @@ import (
 )
 
 func RegisterRoutes(params *common.RoutesParams) {
-	r := redis.NewRedis(params.Redis)
+	r := redis.NewRedis(params.Store, params.StoreCodes)
 	s := service.NewService(r)
 	c := controller.NewController(s)
 	routes.RegisterRoutes(params.Echo, c)
