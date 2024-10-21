@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const codeFormat = "%v : %d"
+
 type StoreCodes interface {
 	SetWithTTL(key, code string, gotCount int, time time.Duration) error
 	GetWithTTL(key string) (string, int, error)
@@ -22,7 +24,7 @@ func NewStoreCodes(client store.Store) StoreCodes {
 }
 
 func (c *storeCodes) SetWithTTL(key, code string, gotCount int, time time.Duration) error {
-	err := c.client.SetWithTTL(key, fmt.Sprintf("%v : %d", code, gotCount), time)
+	err := c.client.SetWithTTL(key, fmt.Sprintf(codeFormat, code, gotCount), time)
 
 	if err != nil {
 		return errors.New("set code ttl - " + err.Error())
@@ -42,7 +44,7 @@ func (c *storeCodes) GetWithTTL(key string) (string, int, error) {
 	var code string
 	var gotCount int
 
-	_, err = fmt.Sscanf(storeValue, "%v : %d", &code, &gotCount)
+	_, err = fmt.Sscanf(storeValue, codeFormat, &code, &gotCount)
 	if err != nil {
 		return "", 0, errors.New("scan code ttl - " + err.Error())
 	}
