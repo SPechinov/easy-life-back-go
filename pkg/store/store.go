@@ -12,6 +12,7 @@ type Store interface {
 	Get(key string) (string, error)
 	Del(key string) error
 	TTL(key string) (time.Duration, error)
+	Has(key string) (bool, error)
 }
 
 var ctx = context.Background()
@@ -49,6 +50,14 @@ func (r *storeClient) Get(key string) (string, error) {
 func (r *storeClient) Del(key string) error {
 	_, err := r.client.Del(ctx, key).Result()
 	return err
+}
+
+func (r *storeClient) Has(key string) (bool, error) {
+	count, err := r.client.Exists(ctx, key).Result()
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *storeClient) TTL(key string) (time.Duration, error) {

@@ -5,5 +5,6 @@ const (
 	CodeInvalidJSON         string = "invalidJSON"
 	CodeInvalidCode         string = "invalidCode"
 	CodeMaxAttemptsExceeded string = "maxAttemptsExceeded"
+	CodeDidntSendCode       string = "didntSendCode"
 	CodeSomethingHappen     string = "somethingHappen"
 )

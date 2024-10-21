@@ -1,4 +1,4 @@
-package controller
+package views
 
 type SignInData struct {
 	Email    string `json:"email" form:"email"`

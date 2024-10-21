@@ -11,24 +11,32 @@ type Store struct {
 	storeCodes store_codes.StoreCodes
 }
 
-func NewStore(redis pkgStore.Store, storeCodes store_codes.StoreCodes) *Store {
+func NewStore(store pkgStore.Store, storeCodes store_codes.StoreCodes) *Store {
 	return &Store{
-		store:      redis,
+		store:      store,
 		storeCodes: storeCodes,
 	}
 }
 
-func (r *Store) SetRegistrationCode(email, code string, attempt int) error {
+func (r *Store) SetRegistrationCode(email, code string, gotCount int) error {
 	return r.storeCodes.SetWithTTL(
 		GetKeyUserRegistrationCode(email),
 		code,
-		attempt,
+		gotCount,
 		time.Minute*10,
 	)
 }
 
+func (r *Store) UpdateGotCountRegistrationCode(email, code string, gotCount int) error {
+	return r.storeCodes.UpdateGotCountWithTTL(GetKeyUserRegistrationCode(email), code, gotCount)
+}
+
 func (r *Store) GetRegistrationCode(email string) (string, int, error) {
 	return r.storeCodes.GetWithTTL(GetKeyUserRegistrationCode(email))
+}
+
+func (r *Store) HasRegistrationCode(email string) (bool, error) {
+	return r.store.Has(GetKeyUserRegistrationCode(email))
 }
 
 func (r *Store) DelRegistrationCode(email string) error {

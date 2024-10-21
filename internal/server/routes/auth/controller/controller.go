@@ -1,40 +1,40 @@
 package controller
 
 import (
-	"easy-life-back-go/internal/constants/validation_rules"
 	"easy-life-back-go/internal/server/routes/auth/service"
+	"easy-life-back-go/internal/server/routes/auth/validation"
+	"easy-life-back-go/internal/server/routes/auth/views"
 	"easy-life-back-go/internal/server/utils/response"
 	"errors"
-	"github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/labstack/echo/v4"
 	"log/slog"
 	"net/http"
 )
 
 type Controller struct {
-	service *service.Service
+	service   *service.Service
+	validator *validation.Validator
 }
 
-func NewController(service *service.Service) *Controller {
+func NewController(
+	service *service.Service,
+	validator *validation.Validator,
+) *Controller {
 	return &Controller{
-		service: service,
+		service:   service,
+		validator: validator,
 	}
 }
 
-func (controller *Controller) SignIn(ctx echo.Context) error {
-	data := new(SignInData)
+func (c *Controller) SignIn(ctx echo.Context) error {
+	data := new(views.SignInData)
 
 	err := ctx.Bind(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
 	}
 
-	err = validation.ValidateStruct(data,
-		validation.Field(&data.Email, validation.Required, is.Email),
-		validation.Field(&data.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
-	)
-
+	err = c.validator.SignIn(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfoValidation(err.Error()))
 	}
@@ -42,67 +42,53 @@ func (controller *Controller) SignIn(ctx echo.Context) error {
 	return nil
 }
 
-func (controller *Controller) Registration(ctx echo.Context) error {
-	data := new(RegistrationData)
+func (c *Controller) Registration(ctx echo.Context) error {
+	data := new(views.RegistrationData)
 
 	err := ctx.Bind(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
 	}
 
-	err = validation.ValidateStruct(data,
-		validation.Field(&data.Email, validation.Required, is.Email),
-	)
-
+	err = c.validator.Registration(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfoValidation(err.Error()))
 	}
 
-	err = controller.service.Registration(data.Email)
-
+	err = c.service.Registration(data.Email)
 	if err != nil {
-		var controllerErr *response.Bad
-		if errors.As(err, &controllerErr) {
-			return ctx.JSON(controllerErr.HttpCode, controllerErr.Info)
-		}
-
-		slog.Error("auth_controller_registration", "err_data", err)
-		return ctx.JSON(http.StatusInternalServerError, response.NewBadInfo(response.CodeSomethingHappen))
+		return c.handleServiceError(ctx, err, "auth_controller_registration_success")
 	}
 
 	return ctx.JSON(http.StatusOK, response.NewSuccess(nil))
 }
 
-func (controller *Controller) RegistrationSuccess(ctx echo.Context) error {
-	data := new(RegistrationSuccessData)
+func (c *Controller) RegistrationSuccess(ctx echo.Context) error {
+	data := new(views.RegistrationSuccessData)
 
 	err := ctx.Bind(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfo(response.CodeInvalidJSON))
 	}
 
-	err = validation.ValidateStruct(data,
-		validation.Field(&data.Email, validation.Required, is.Email),
-		validation.Field(&data.Name, validation.Required, validation.RuneLength(validation_rules.LenMinName, validation_rules.LenMaxName)),
-		validation.Field(&data.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
-		validation.Field(&data.Code, validation.Required, validation.RuneLength(validation_rules.LenRegistrationCode, validation_rules.LenRegistrationCode)),
-	)
-
+	err = c.validator.RegistrationSuccess(data)
 	if err != nil {
 		return ctx.JSON(http.StatusBadRequest, response.NewBadInfoValidation(err.Error()))
 	}
 
-	err = controller.service.RegistrationSuccess(data.Name, data.Email, data.Password, data.Code)
-
+	err = c.service.RegistrationSuccess(data.Name, data.Email, data.Password, data.Code)
 	if err != nil {
-		var controllerErr *response.Bad
-		if errors.As(err, &controllerErr) {
-			return ctx.JSON(controllerErr.HttpCode, controllerErr.Info)
-		}
-
-		slog.Error("auth_controller_registration_success", "err_data", err)
-		return ctx.JSON(http.StatusInternalServerError, response.NewBadInfo(response.CodeSomethingHappen))
+		return c.handleServiceError(ctx, err, "auth_controller_registration_success")
 	}
 
 	return ctx.JSON(http.StatusOK, response.NewSuccess(nil))
+}
+
+func (c *Controller) handleServiceError(ctx echo.Context, err error, logMessage string) error {
+	var controllerErr *response.Bad
+	if errors.As(err, &controllerErr) {
+		return ctx.JSON(controllerErr.HttpCode, controllerErr.Info)
+	}
+	slog.Error(logMessage, "err_data", err)
+	return ctx.JSON(http.StatusInternalServerError, response.NewBadInfo(response.CodeSomethingHappen))
 }
