@@ -11,7 +11,7 @@ import (
 
 func RegisterRoutes(params *common.RoutesParams) {
 	st := store.NewStore(params.Store, params.StoreCodes)
-	s := service.NewService(st)
+	s := service.NewService(st, params.Crypto)
 	v := validation.NewValidator()
 	c := controller.NewController(s, v)
 	routes.RegisterRoutes(params.Echo, c)

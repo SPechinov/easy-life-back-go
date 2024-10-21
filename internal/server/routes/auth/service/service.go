@@ -4,17 +4,21 @@ import (
 	"easy-life-back-go/internal/server/routes/auth/store"
 	"easy-life-back-go/internal/server/utils/response"
 	"easy-life-back-go/internal/utils"
+	"easy-life-back-go/pkg/crypto"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
 type Service struct {
-	store *store.Store
+	store  *store.Store
+	crypto crypto.Crypto
 }
 
-func NewService(store *store.Store) *Service {
+func NewService(store *store.Store, crypto crypto.Crypto) *Service {
 	return &Service{
-		store: store,
+		store:  store,
+		crypto: crypto,
 	}
 }
 
@@ -33,6 +37,7 @@ func (s *Service) Registration(email string) error {
 }
 
 func (s *Service) RegistrationSuccess(name, email, password, code string) error {
+	// Check codes
 	has, err := s.store.HasRegistrationCode(email)
 	if err != nil {
 		return errors.New("has code - " + err.Error())
@@ -64,6 +69,19 @@ func (s *Service) RegistrationSuccess(name, email, password, code string) error 
 	if err != nil {
 		return errors.New("del code - " + err.Error())
 	}
+
+	// Encrypt data
+	encryptedEmail, err := s.crypto.Encrypt(email)
+	if err != nil {
+		return errors.New("encrypt email - " + err.Error())
+	}
+
+	encryptedPassword, err := s.crypto.Encrypt(email)
+	if err != nil {
+		return errors.New("encrypt password - " + err.Error())
+	}
+
+	fmt.Println(encryptedEmail, encryptedPassword)
 
 	return nil
 }
