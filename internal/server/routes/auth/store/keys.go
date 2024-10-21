@@ -1,4 +1,4 @@
-package redis
+package store
 
 func GetKeyUserRegistrationCode(email string) string {
 	return "http:users:reg-code:" + email

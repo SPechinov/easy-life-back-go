@@ -1,4 +1,4 @@
-package redis
+package store
 
 import (
 	"easy-life-back-go/internal/pkg/store_codes"
@@ -11,7 +11,7 @@ type Store struct {
 	storeCodes store_codes.StoreCodes
 }
 
-func NewRedis(redis pkgStore.Store, storeCodes store_codes.StoreCodes) *Store {
+func NewStore(redis pkgStore.Store, storeCodes store_codes.StoreCodes) *Store {
 	return &Store{
 		store:      redis,
 		storeCodes: storeCodes,
