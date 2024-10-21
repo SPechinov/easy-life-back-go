@@ -4,6 +4,7 @@ import (
 	envInt "easy-life-back-go/internal/pkg/env"
 	"easy-life-back-go/internal/pkg/store_codes"
 	"easy-life-back-go/internal/server/common"
+	"easy-life-back-go/pkg/crypto"
 	"easy-life-back-go/pkg/store"
 	"fmt"
 	"github.com/labstack/echo/v4"
@@ -17,6 +18,9 @@ func Start() {
 	if err != nil {
 		slog.Error(err.Error())
 	}
+
+	// Init crypto
+	cr := crypto.New(env.Crypto.Key)
 
 	// Start store
 	s := store.NewClient(
@@ -36,6 +40,7 @@ func Start() {
 		Echo:       e.Group("/api"),
 		Store:      s,
 		StoreCodes: sCodes,
+		Crypto:     cr,
 	})
 
 	// Start server

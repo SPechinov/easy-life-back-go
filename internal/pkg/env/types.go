@@ -11,7 +11,12 @@ type Redis struct {
 	DB       int    `yaml:"db"`
 }
 
+type Crypto struct {
+	Key string `yaml:"key"`
+}
+
 type ENV struct {
 	Server Server `yaml:"server"`
 	Redis  Redis  `yaml:"redis"`
+	Crypto Crypto `yaml:"crypto"`
 }
