@@ -2,7 +2,6 @@ package store
 
 import (
 	"context"
-	"errors"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -14,7 +13,6 @@ type Store interface {
 	Del(key string) error
 	TTL(key string) (time.Duration, error)
 	Has(key string) (bool, error)
-	Close() error
 }
 
 var ctx = context.Background()
@@ -23,7 +21,7 @@ type storeClient struct {
 	client *redis.Client
 }
 
-func New(address, password string, db int) Store {
+func NewClient(address, password string, db int) Store {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
@@ -64,14 +62,4 @@ func (r *storeClient) Has(key string) (bool, error) {
 
 func (r *storeClient) TTL(key string) (time.Duration, error) {
 	return r.client.TTL(ctx, key).Result()
-}
-
-func (r *storeClient) Close() error {
-	err := r.client.Close()
-
-	if err != nil {
-		return errors.New("failed to close redis connection: " + err.Error())
-	}
-
-	return nil
 }
