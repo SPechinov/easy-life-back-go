@@ -15,8 +15,13 @@ type Crypto struct {
 	Key string `yaml:"key"`
 }
 
+type Postgres struct {
+	ConnectionString string `yaml:"connection_string"`
+}
+
 type ENV struct {
-	Server Server `yaml:"server"`
-	Redis  Redis  `yaml:"redis"`
-	Crypto Crypto `yaml:"crypto"`
+	Server   Server   `yaml:"server"`
+	Redis    Redis    `yaml:"redis"`
+	Crypto   Crypto   `yaml:"crypto"`
+	Postgres Postgres `yaml:"postgres"`
 }
