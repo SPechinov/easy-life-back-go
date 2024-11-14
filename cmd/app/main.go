@@ -8,6 +8,7 @@ import (
 	"go-clean/config"
 	"go-clean/internal/api/rest/middlewares"
 	"go-clean/internal/composites"
+	"go-clean/migrations"
 	"go-clean/pkg/postgres"
 	"go-clean/pkg/redis"
 	"io"
@@ -21,13 +22,17 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	cfg := initConfig()
+
 	store := initRedis(cfg)
 	defer func() {
 		_ = store.Close()
 	}()
+
 	db := initPostgres(cfg)
 	defer db.Close()
-	initPostgresMigrations(db.ConnectionString)
+
+	// Migrations
+	migrations.RunMigrations(db.ConnectionString)
 
 	// Rest server
 	restServer := echo.New()
@@ -58,7 +63,6 @@ func initConfig() *config.Config {
 }
 
 func initRedis(cfg *config.Config) *redis.Redis {
-	fmt.Println("Redis connecting...")
 	redisComposite, err := composites.NewRedis(ctx, &redis.Options{
 		Host:     cfg.Redis.Host,
 		Port:     cfg.Redis.Port,
@@ -68,7 +72,6 @@ func initRedis(cfg *config.Config) *redis.Redis {
 	if err != nil {
 		panic("Redis not connected")
 	}
-	fmt.Println("Redis connected")
 	return redisComposite
 }
 

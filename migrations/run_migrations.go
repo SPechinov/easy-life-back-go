@@ -1,4 +1,4 @@
-package main
+package migrations
 
 import (
 	"database/sql"
@@ -9,7 +9,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func initPostgresMigrations(connectionString string) {
+func RunMigrations(connectionString string) {
 	fmt.Println("Applying migrations...")
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
