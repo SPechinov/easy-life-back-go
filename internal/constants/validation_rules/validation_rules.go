@@ -1,11 +1,12 @@
 package validation_rules
 
 const (
-	LenMinName = 2
-	LenMaxName = 100
+	LenMinFirstName = 2
+	LenMaxFirstName = 100
+	LenMinPhone     = 10
+	LenMaxPhone     = 20
 
-	LenMinPassword = 8
-	LenMaxPassword = 100
-
+	LenMinPassword      = 8
+	LenMaxPassword      = 100
 	LenRegistrationCode = 6
 )
