@@ -39,29 +39,29 @@ func New(ctx context.Context, options *Options) (*Redis, error) {
 
 func connect(ctx context.Context, client *redis.Client) error {
 	fmt.Println("Redis connecting...")
-	connectedErr := client.Ping(ctx).Err()
+	connectionErr := client.Ping(ctx).Err()
 
-	if connectedErr == nil {
+	if connectionErr == nil {
 		fmt.Println("Redis connected")
 		return nil
 	}
 
 	tryCount := 1
 	for tryCount < 10 {
+		time.Sleep(2 * time.Second)
+
 		fmt.Printf("Redis try to connect: %d time\n", tryCount+1)
 		tryCount++
-		connectedErr = client.Ping(ctx).Err()
+		connectionErr = client.Ping(ctx).Err()
 
-		if connectedErr == nil {
+		if connectionErr == nil {
 			fmt.Println("Redis connected")
-			break
+			return nil
 		}
-
-		time.Sleep(2 * time.Second)
 	}
 
-	fmt.Printf("Redis not connected: %s\n", connectedErr)
-	return connectedErr
+	fmt.Printf("Redis not connected: %s\n", connectionErr)
+	return connectionErr
 }
 
 func (r *Redis) Close() error {

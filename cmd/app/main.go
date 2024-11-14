@@ -21,14 +21,39 @@ func main() {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.DebugLevel)
 
-	cfg := initConfig()
+	// Config
+	cfg, err := config.InitConfig("./env.yaml")
+	if err != nil {
+		panic("Config not initialized")
+	}
 
-	store := initRedis(cfg)
+	// Redis
+	store, err := composites.NewRedis(ctx, &redis.Options{
+		Host:     cfg.Redis.Host,
+		Port:     cfg.Redis.Port,
+		Password: cfg.Redis.Password,
+		DB:       cfg.Redis.DB,
+	})
+	if err != nil {
+		panic("Redis not connected")
+	}
 	defer func() {
 		_ = store.Close()
 	}()
 
-	db := initPostgres(cfg)
+	// Postgres
+
+	db, err := composites.NewPostgres(ctx, &postgres.Options{
+		Host:     cfg.Postgres.Host,
+		Port:     cfg.Postgres.Port,
+		User:     cfg.Postgres.User,
+		Password: cfg.Postgres.Password,
+		DBName:   cfg.Postgres.DBName,
+		SSLMode:  cfg.Postgres.SSLMode,
+	})
+	if err != nil {
+		panic("Postgres not connected")
+	}
 	defer db.Close()
 
 	// Migrations
@@ -47,47 +72,7 @@ func main() {
 	composites.NewRestUser(cfg, router, store, db)
 
 	fmt.Println("Server started on port: " + cfg.Server.Port)
-	if err := restServer.Start(":" + cfg.Server.Port); err != nil {
+	if err = restServer.Start(":" + cfg.Server.Port); err != nil {
 		panic(err)
 	}
-}
-
-func initConfig() *config.Config {
-	fmt.Println("Config initializing...")
-	cfg, err := config.InitConfig("./env.yaml")
-	if err != nil {
-		panic("Config not initialized")
-	}
-	fmt.Println("Config initialized")
-	return cfg
-}
-
-func initRedis(cfg *config.Config) *redis.Redis {
-	redisComposite, err := composites.NewRedis(ctx, &redis.Options{
-		Host:     cfg.Redis.Host,
-		Port:     cfg.Redis.Port,
-		Password: cfg.Redis.Password,
-		DB:       cfg.Redis.DB,
-	})
-	if err != nil {
-		panic("Redis not connected")
-	}
-	return redisComposite
-}
-
-func initPostgres(cfg *config.Config) *postgres.Postgres {
-	fmt.Println("Postgres connecting...")
-	postgresComposite, err := composites.NewPostgres(ctx, &postgres.Options{
-		Host:     cfg.Postgres.Host,
-		Port:     cfg.Postgres.Port,
-		User:     cfg.Postgres.User,
-		Password: cfg.Postgres.Password,
-		DBName:   cfg.Postgres.DBName,
-		SSLMode:  cfg.Postgres.SSLMode,
-	})
-	if err != nil {
-		panic("Postgres not connected")
-	}
-	fmt.Println("Postgres connected")
-	return postgresComposite
 }
