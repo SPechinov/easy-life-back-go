@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"go-clean/pkg/helpers"
 	"time"
 )
 
@@ -39,29 +40,29 @@ func New(ctx context.Context, options *Options) (*Redis, error) {
 
 func connect(ctx context.Context, client *redis.Client) error {
 	fmt.Println("Redis connecting...")
-	connectionErr := client.Ping(ctx).Err()
 
-	if connectionErr == nil {
-		fmt.Println("Redis connected")
-		return nil
-	}
+	err := helpers.Repeatable(
+		func() error {
+			fmt.Println("Redis try to connect")
 
-	tryCount := 1
-	for tryCount < 10 {
-		time.Sleep(2 * time.Second)
+			pingErr := client.Ping(ctx).Err()
+			if pingErr != nil {
+				return pingErr
+			}
 
-		fmt.Printf("Redis try to connect: %d time\n", tryCount+1)
-		tryCount++
-		connectionErr = client.Ping(ctx).Err()
-
-		if connectionErr == nil {
-			fmt.Println("Redis connected")
 			return nil
-		}
+		},
+		10,
+		2*time.Second,
+	)
+
+	if err != nil {
+		fmt.Printf("Redis not connected: %s\n", err)
+		return err
 	}
 
-	fmt.Printf("Redis not connected: %s\n", connectionErr)
-	return connectionErr
+	fmt.Println("Redis connected")
+	return nil
 }
 
 func (r *Redis) Close() error {

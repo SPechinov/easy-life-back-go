@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go-clean/pkg/helpers"
 	"time"
 )
 
@@ -34,38 +35,31 @@ func New(ctx context.Context, options *Options) (*Postgres, error) {
 }
 
 func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
+	var pool *pgxpool.Pool
+
 	fmt.Println("Postgres connecting...")
-	pool, connectionErr := pgxpool.New(ctx, connectionString)
-
-	if connectionErr == nil {
-		connectionErr = pool.Ping(ctx)
-
-		if connectionErr == nil {
-			fmt.Println("Postgres connected")
-			return pool, nil
+	err := helpers.Repeatable(func() error {
+		fmt.Println("Postgres try to connect")
+		pool, poolErr := pgxpool.New(ctx, connectionString)
+		if poolErr != nil {
+			return poolErr
 		}
+
+		pingErr := pool.Ping(ctx)
+		if pingErr != nil {
+			return pingErr
+		}
+
+		return nil
+	}, 10, 2*time.Second)
+
+	if err != nil {
+		fmt.Printf("Postgres not connected: %s\n", err)
+		return nil, err
 	}
 
-	tryCount := 1
-	for tryCount < 10 {
-		time.Sleep(2 * time.Second)
-
-		fmt.Printf("Postgres try to connect: %d time\n", tryCount+1)
-		tryCount++
-
-		pool, connectionErr = pgxpool.New(ctx, connectionString)
-		if connectionErr == nil {
-			connectionErr = pool.Ping(ctx)
-
-			if connectionErr == nil {
-				fmt.Println("Postgres connected")
-				return pool, nil
-			}
-		}
-	}
-
-	fmt.Printf("Postgres not connected: %s\n", connectionErr)
-	return nil, connectionErr
+	fmt.Println("Postgres connected")
+	return pool, nil
 }
 
 func getConnectionString(options *Options) string {
