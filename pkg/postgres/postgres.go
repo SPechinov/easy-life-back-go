@@ -9,9 +9,8 @@ import (
 )
 
 type Postgres struct {
-	ctx              context.Context
-	pool             *pgxpool.Pool
-	ConnectionString string
+	ctx  context.Context
+	pool *pgxpool.Pool
 }
 
 type Options struct {
@@ -31,7 +30,7 @@ func New(ctx context.Context, options *Options) (*Postgres, error) {
 		return nil, err
 	}
 
-	return &Postgres{ctx: ctx, pool: pool, ConnectionString: connectionString}, nil
+	return &Postgres{ctx: ctx, pool: pool}, nil
 }
 
 func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
