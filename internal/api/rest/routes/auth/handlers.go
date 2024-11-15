@@ -255,12 +255,10 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 
 	ctx = logger.LogWithUserID(ctx, userID)
 
-	fmt.Println(1)
 	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(ctx, userID, sessionID, refreshJWT)
 	if err != nil {
 		return rest_error.ErrNotAuthorized
 	}
-	fmt.Println(2)
 
 	setResponseAuthData(c, newAccessJWT, newRefreshJWT, newSessionID)
 

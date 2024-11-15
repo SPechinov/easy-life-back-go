@@ -42,7 +42,7 @@ func main() {
 	}()
 
 	// Postgres
-	db, err := composites.NewPostgres(ctx, &postgres.Options{
+	db, err := composites.NewPostgres(context.Background(), &postgres.Options{
 		Host:     cfg.Postgres.Host,
 		Port:     cfg.Postgres.Port,
 		User:     cfg.Postgres.User,

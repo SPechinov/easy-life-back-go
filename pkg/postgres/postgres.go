@@ -39,15 +39,17 @@ func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error
 	fmt.Println("Postgres connecting...")
 	err := helpers.Repeatable(func() error {
 		fmt.Println("Postgres try to connect")
-		pool, poolErr := pgxpool.New(ctx, connectionString)
+		pl, poolErr := pgxpool.New(ctx, connectionString)
 		if poolErr != nil {
 			return poolErr
 		}
 
-		pingErr := pool.Ping(ctx)
+		pingErr := pl.Ping(ctx)
 		if pingErr != nil {
 			return pingErr
 		}
+
+		pool = pl
 
 		return nil
 	}, 10, 2*time.Second)
