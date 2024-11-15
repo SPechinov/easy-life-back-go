@@ -16,3 +16,7 @@ func (p *Postgres) Query(sql string, arguments ...any) (pgx.Rows, error) {
 func (p *Postgres) QueryRow(sql string, arguments ...any) pgx.Row {
 	return p.pool.QueryRow(p.ctx, sql, arguments...)
 }
+
+func (p *Postgres) Close() {
+	p.pool.Close()
+}

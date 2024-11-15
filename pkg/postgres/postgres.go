@@ -69,7 +69,3 @@ func getConnectionString(options *Options) string {
 	}
 	return connectionString
 }
-
-func (p *Postgres) Close() {
-	p.pool.Close()
-}

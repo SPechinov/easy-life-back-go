@@ -9,9 +9,18 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func RunMigrations(connectionString string) {
+type Options struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	DBName   string
+	SSLMode  bool
+}
+
+func Run(options *Options) {
 	fmt.Println("Applying migrations...")
-	db, err := sql.Open("postgres", connectionString)
+	db, err := sql.Open("postgres", getConnectionString(options))
 	if err != nil {
 		panic("open: " + err.Error())
 	}
@@ -36,4 +45,12 @@ func RunMigrations(connectionString string) {
 		panic("apply: " + err.Error())
 	}
 	fmt.Println("Applied migrations")
+}
+
+func getConnectionString(options *Options) string {
+	connectionString := "postgres://" + options.User + ":" + options.Password + "@" + options.Host + ":" + options.Port + "/" + options.DBName
+	if !options.SSLMode {
+		connectionString += "?sslmode=disable"
+	}
+	return connectionString
 }

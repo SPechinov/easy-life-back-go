@@ -42,7 +42,6 @@ func main() {
 	}()
 
 	// Postgres
-
 	db, err := composites.NewPostgres(ctx, &postgres.Options{
 		Host:     cfg.Postgres.Host,
 		Port:     cfg.Postgres.Port,
@@ -57,7 +56,14 @@ func main() {
 	defer db.Close()
 
 	// Migrations
-	migrations.RunMigrations(db.ConnectionString)
+	migrations.Run(&migrations.Options{
+		Host:     cfg.Postgres.Host,
+		Port:     cfg.Postgres.Port,
+		User:     cfg.Postgres.User,
+		Password: cfg.Postgres.Password,
+		DBName:   cfg.Postgres.DBName,
+		SSLMode:  cfg.Postgres.SSLMode,
+	})
 
 	// Rest server
 	restServer := echo.New()
