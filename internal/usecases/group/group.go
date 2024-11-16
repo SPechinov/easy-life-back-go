@@ -9,14 +9,12 @@ import (
 type Group struct {
 	cfg          *config.Config
 	groupService groupService
-	userService  userService
 }
 
-func New(cfg *config.Config, groupService groupService, userService userService) Group {
+func New(cfg *config.Config, groupService groupService) Group {
 	return Group{
 		cfg:          cfg,
 		groupService: groupService,
-		userService:  userService,
 	}
 }
 

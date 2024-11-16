@@ -47,7 +47,7 @@ func (u *User) AddUser(ctx context.Context, data entities.UserAddConfirm) error 
 	ad := getAuthData(data.AuthWay)
 
 	query := `
-		INSERT INTO users (email, phone, first_name, password)
+		INSERT INTO public.users (email, phone, first_name, password)
 		VALUES ($1, $2, $3, $4)
 	`
 	_, err := u.postgres.Exec(query, ad.email, ad.phone, data.FirstName, data.Password)
@@ -63,7 +63,7 @@ func (u *User) AddUser(ctx context.Context, data entities.UserAddConfirm) error 
 func (u *User) RestoreUser(ctx context.Context, data entities.UserAddConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
-	query := `UPDATE users SET first_name = $1, password = $2, deleted_at = null WHERE email = $3 OR phone = $4`
+	query := `UPDATE public.users SET first_name = $1, password = $2, deleted_at = null WHERE email = $3 OR phone = $4`
 
 	_, err := u.postgres.Exec(query, data.FirstName, data.Password, ad.email, ad.phone)
 
@@ -84,7 +84,7 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 	var userData dataUser
 	var err error
 	if data.ID == "" {
-		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM users WHERE email = $1 OR phone = $2`
+		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM public.users WHERE email = $1 OR phone = $2`
 		err = u.postgres.QueryRow(query, data.Email, data.Phone).Scan(
 			&userData.ID,
 			&userData.Email,
@@ -97,7 +97,7 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 			&userData.DeletedAt,
 		)
 	} else {
-		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM users WHERE id = $1`
+		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM public.users WHERE id = $1`
 		err = u.postgres.QueryRow(query, data.ID).Scan(
 			&userData.ID,
 			&userData.Email,
@@ -146,7 +146,7 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
-	query := `UPDATE users SET password = $1 WHERE email = $2 OR phone = $3`
+	query := `UPDATE public.users SET password = $1 WHERE email = $2 OR phone = $3`
 
 	_, err := u.postgres.Exec(query, data.Password, ad.email, ad.phone)
 

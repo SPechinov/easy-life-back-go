@@ -9,4 +9,6 @@ const (
 
 	RestAuthAccessJWTDuration = time.Minute * 5
 	RestAuthRefreshWTDuration = time.Hour * 720
+
+	DefaultAdminPermission = 777
 )

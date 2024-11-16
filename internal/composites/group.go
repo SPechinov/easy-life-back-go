@@ -17,8 +17,8 @@ func NewGroup(cfg *config.Config, router *echo.Group, postgres *postgres.Postgre
 	us := userService.New(udb)
 
 	gdb := groupDatabase.New(postgres)
-	gs := groupService.New(gdb)
-	guc := groupUseCases.New(cfg, gs, us)
+	gs := groupService.New(gdb, us)
+	guc := groupUseCases.New(cfg, gs)
 
 	groupRestHandler.New(cfg, &guc).Register(router)
 }

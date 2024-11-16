@@ -8,6 +8,7 @@ type Group struct {
 	CreatedAt string
 	UpdatedAt string
 	DeletedAt *string
+	Users     []User
 }
 
 func (g Group) Deleted() bool {

@@ -1,4 +1,4 @@
-package user
+package group
 
 import (
 	"github.com/labstack/echo/v4"
@@ -19,9 +19,9 @@ func New(cfg *config.Config, useCases useCases) rest.Handler {
 	}
 }
 
-func (c *restGroupController) Register(router *echo.Group) {
+func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter := router.Group("/groups")
-	authRouter.Use(middlewares.AuthMiddleware(c.cfg))
+	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouter.POST("", c.handlerGroupAdd)
+	authRouter.POST("", controller.handlerGroupAdd)
 }

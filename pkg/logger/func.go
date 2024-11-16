@@ -79,3 +79,19 @@ func LogWithPhone(ctx context.Context, phone string) context.Context {
 	})
 	return Set(ctx, l)
 }
+
+func LogWithGroupName(ctx context.Context, groupName string) context.Context {
+	l := Get(ctx)
+	l = l.WithFields(logrus.Fields{
+		"GroupName": groupName,
+	})
+	return Set(ctx, l)
+}
+
+func LogWithGroupID(ctx context.Context, groupID string) context.Context {
+	l := Get(ctx)
+	l = l.WithFields(logrus.Fields{
+		"GroupID": groupID,
+	})
+	return Set(ctx, l)
+}

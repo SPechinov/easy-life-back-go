@@ -1,9 +1,18 @@
 package postgres
 
 import (
+	"context"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
+
+func (p *Postgres) GetContext() context.Context {
+	return p.ctx
+}
+
+func (p *Postgres) Begin() (pgx.Tx, error) {
+	return p.pool.Begin(p.ctx)
+}
 
 func (p *Postgres) Exec(sql string, arguments ...any) (pgconn.CommandTag, error) {
 	return p.pool.Exec(p.ctx, sql, arguments...)
