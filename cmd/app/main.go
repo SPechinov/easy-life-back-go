@@ -76,6 +76,7 @@ func main() {
 
 	composites.NewRestAuth(cfg, router, store, db)
 	composites.NewRestUser(cfg, router, store, db)
+	composites.NewGroup(cfg, router, db)
 
 	fmt.Println("Server started on port: " + cfg.Server.Port)
 	if err = restServer.Start(":" + cfg.Server.Port); err != nil {

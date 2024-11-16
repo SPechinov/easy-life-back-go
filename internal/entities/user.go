@@ -22,23 +22,9 @@ type UserGet struct {
 	Phone string
 }
 
-// Auth Methods
-const (
-	AuthMethodEmail = iota
-	AuthMethodPhone
-)
-
 type UserAuthWay struct {
 	Email string
 	Phone string
-}
-
-func (way *UserAuthWay) GetAuthData() int {
-	if way.Email != "" {
-		return AuthMethodEmail
-	}
-
-	return AuthMethodPhone
 }
 
 func (way *UserAuthWay) GetAuthValue() string {
