@@ -36,7 +36,7 @@ func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionI
 	}
 	userID := user.ID
 
-	ctx = logger.LogWithUserID(ctx, userID)
+	ctx = logger.WithUserID(ctx, userID)
 
 	if !helpers.CheckPasswordHash(data.Password, user.Password) {
 		logger.Debug(ctx, "Incorrect password")
@@ -83,7 +83,7 @@ func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) erro
 		return err
 	}
 
-	ctx = logger.LogWithConfirmationCode(ctx, code)
+	ctx = logger.WithConfirmationCode(ctx, code)
 
 	logger.Debug(ctx, "Code sent")
 
@@ -143,7 +143,7 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 		return err
 	}
 
-	ctx = logger.LogWithUserID(ctx, dbUser.ID)
+	ctx = logger.WithUserID(ctx, dbUser.ID)
 
 	if dbUser.Deleted() {
 		logger.Debug(ctx, "User deleted")
@@ -157,7 +157,7 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 		return err
 	}
 
-	ctx = logger.LogWithConfirmationCode(ctx, code)
+	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
 	err = ra.store.SetForgotPasswordCode(ctx, data.AuthWay.GetAuthValue(), code)
@@ -192,7 +192,7 @@ func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.User
 		return err
 	}
 
-	ctx = logger.LogWithUserID(ctx, dbUser.ID)
+	ctx = logger.WithUserID(ctx, dbUser.ID)
 
 	if dbUser.Deleted() {
 		logger.Debug(ctx, "User deleted")

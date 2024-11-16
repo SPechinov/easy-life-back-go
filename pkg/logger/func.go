@@ -5,7 +5,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func LogWithSessionID(ctx context.Context, sessionID string) context.Context {
+func WithSessionID(ctx context.Context, sessionID string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"SessionID": sessionID,
@@ -21,7 +21,7 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithUserID(ctx context.Context, userID string) context.Context {
+func WithUserID(ctx context.Context, userID string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"UserID": userID,
@@ -37,7 +37,7 @@ func WithURL(ctx context.Context, url string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithPassword(ctx context.Context, password string) context.Context {
+func WithPassword(ctx context.Context, password string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"Password": password,
@@ -45,7 +45,7 @@ func LogWithPassword(ctx context.Context, password string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithConfirmationCode(ctx context.Context, confirmationCode string) context.Context {
+func WithConfirmationCode(ctx context.Context, confirmationCode string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"ConfirmationCode": confirmationCode,
@@ -53,18 +53,18 @@ func LogWithConfirmationCode(ctx context.Context, confirmationCode string) conte
 	return Set(ctx, l)
 }
 
-func LogWithRestAuthData(ctx context.Context, email, phone string) context.Context {
+func WithRestAuthData(ctx context.Context, email, phone string) context.Context {
 	if email != "" {
-		ctx = LogWithEmail(ctx, email)
+		ctx = WithEmail(ctx, email)
 	}
 
 	if phone != "" {
-		ctx = LogWithPhone(ctx, phone)
+		ctx = WithPhone(ctx, phone)
 	}
 	return ctx
 }
 
-func LogWithEmail(ctx context.Context, email string) context.Context {
+func WithEmail(ctx context.Context, email string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"Email": email,
@@ -72,7 +72,7 @@ func LogWithEmail(ctx context.Context, email string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithPhone(ctx context.Context, phone string) context.Context {
+func WithPhone(ctx context.Context, phone string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"Phone": phone,
@@ -80,7 +80,7 @@ func LogWithPhone(ctx context.Context, phone string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithGroupName(ctx context.Context, groupName string) context.Context {
+func WithGroupName(ctx context.Context, groupName string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"GroupName": groupName,
@@ -88,7 +88,7 @@ func LogWithGroupName(ctx context.Context, groupName string) context.Context {
 	return Set(ctx, l)
 }
 
-func LogWithGroupID(ctx context.Context, groupID string) context.Context {
+func WithGroupID(ctx context.Context, groupID string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{
 		"GroupID": groupID,

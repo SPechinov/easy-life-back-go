@@ -29,8 +29,8 @@ func (controller *restAuthController) handlerLogin(c echo.Context) error {
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.LogWithPassword(ctx, dto.Password)
+	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
+	ctx = logger.WithPassword(ctx, dto.Password)
 	logger.Debug(ctx, "Start")
 
 	err = validateLoginDTO(dto)
@@ -72,7 +72,7 @@ func (controller *restAuthController) handlerRegistration(c echo.Context) error 
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithRestAuthData(ctx, dto.Email, dto.Phone)
+	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
 	logger.Debug(ctx, "Start")
 
 	err = validateRegistrationDTO(dto)
@@ -110,9 +110,9 @@ func (controller *restAuthController) handlerRegistrationConfirm(c echo.Context)
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.LogWithConfirmationCode(ctx, dto.Code)
-	ctx = logger.LogWithPassword(ctx, dto.Password)
+	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
+	ctx = logger.WithConfirmationCode(ctx, dto.Code)
+	ctx = logger.WithPassword(ctx, dto.Password)
 	logger.Debug(ctx, "Start")
 
 	err = validateRegistrationConfirmDTO(dto)
@@ -154,7 +154,7 @@ func (controller *restAuthController) handlerForgotPassword(c echo.Context) erro
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithRestAuthData(ctx, dto.Email, dto.Phone)
+	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
 	logger.Debug(ctx, "Start")
 
 	err = validateForgotPasswordDTO(dto)
@@ -192,8 +192,8 @@ func (controller *restAuthController) handlerForgotPasswordConfirm(c echo.Contex
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.LogWithPassword(ctx, dto.Password)
+	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
+	ctx = logger.WithPassword(ctx, dto.Password)
 	logger.Debug(ctx, "Start")
 
 	err = validateForgotPasswordConfirmDTO(dto)
@@ -236,7 +236,7 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.LogWithSessionID(ctx, sessionID)
+	ctx = logger.WithSessionID(ctx, sessionID)
 
 	// Check refreshJWT
 	refreshJWT := utils.GetRequestRefreshJWT(c)
@@ -253,7 +253,7 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.LogWithUserID(ctx, userID)
+	ctx = logger.WithUserID(ctx, userID)
 
 	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(ctx, userID, sessionID, refreshJWT)
 	if err != nil {
@@ -280,7 +280,7 @@ func (controller *restAuthController) handlerLogout(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.LogWithUserID(ctx, userID)
+	ctx = logger.WithUserID(ctx, userID)
 
 	// Check SessionID
 	sessionID := utils.GetRequestSessionID(c)
@@ -289,7 +289,7 @@ func (controller *restAuthController) handlerLogout(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.LogWithSessionID(ctx, sessionID)
+	ctx = logger.WithSessionID(ctx, sessionID)
 
 	controller.useCases.Logout(ctx, userID, sessionID)
 
@@ -313,7 +313,7 @@ func (controller *restAuthController) handlerLogoutAll(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.LogWithUserID(ctx, userID)
+	ctx = logger.WithUserID(ctx, userID)
 
 	controller.useCases.LogoutAll(ctx, userID)
 

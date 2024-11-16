@@ -30,7 +30,7 @@ func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 		return rest_error.ErrInvalidBodyData
 	}
 
-	ctx = logger.LogWithGroupName(ctx, dto.Name)
+	ctx = logger.WithGroupName(ctx, dto.Name)
 	logger.Debug(ctx, "Start")
 
 	err = validateAddDTO(dto)
@@ -46,7 +46,7 @@ func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 		return err
 	}
 
-	ctx = logger.LogWithGroupID(ctx, group.ID)
+	ctx = logger.WithGroupID(ctx, group.ID)
 	logger.Debug(ctx, "Finish")
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
