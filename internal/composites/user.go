@@ -8,6 +8,6 @@ import (
 	"go-clean/pkg/redis"
 )
 
-func NewRestUser(cfg *config.Config, router *echo.Group, redis *redis.Redis, postgres *postgres.Postgres) {
+func NewRestUser(cfg *config.Config, router *echo.Group, redis *redis.Redis, postgres postgres.Client) {
 	userRestHandler.New(cfg).Register(router)
 }

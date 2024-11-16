@@ -5,6 +5,6 @@ import (
 	"go-clean/pkg/postgres"
 )
 
-func NewPostgres(ctx context.Context, options *postgres.Options) (*postgres.Postgres, error) {
+func NewPostgres(ctx context.Context, options *postgres.Options) (postgres.Client, error) {
 	return postgres.New(ctx, options)
 }

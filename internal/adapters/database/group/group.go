@@ -10,24 +10,23 @@ import (
 )
 
 type Group struct {
-	postgres *postgres.Postgres
+	postgres postgres.Client
 }
 
-func New(postgres *postgres.Postgres) *Group {
+func New(postgres postgres.Client) *Group {
 	return &Group{
 		postgres: postgres,
 	}
 }
 
 func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
-	tx, err := g.postgres.Begin()
-	pgCtx := g.postgres.GetContext()
+	tx, err := g.postgres.Begin(ctx)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
 	}
 	defer func() {
-		_ = tx.Rollback(pgCtx)
+		_ = tx.Rollback(ctx)
 	}()
 
 	queryAddGroup := `
@@ -37,7 +36,7 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	`
 
 	group := new(dataGroup)
-	err = tx.QueryRow(pgCtx, queryAddGroup, entity.Name).Scan(
+	err = tx.QueryRow(ctx, queryAddGroup, entity.Name).Scan(
 		&group.ID,
 		&group.Name,
 		&group.IsPayed,
@@ -55,13 +54,13 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 		VALUES ($1, $2, $3)
 	`
 
-	_, err = tx.Exec(pgCtx, queryUsersGroup, group.ID, entity.AdminID, constants.DefaultAdminPermission)
+	_, err = tx.Exec(ctx, queryUsersGroup, group.ID, entity.AdminID, constants.DefaultAdminPermission)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
 	}
 
-	if err = tx.Commit(pgCtx); err != nil {
+	if err = tx.Commit(ctx); err != nil {
 		logger.Error(ctx, err)
 		return nil, err
 	}

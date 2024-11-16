@@ -12,7 +12,7 @@ import (
 	"go-clean/pkg/postgres"
 )
 
-func NewGroup(cfg *config.Config, router *echo.Group, postgres *postgres.Postgres) {
+func NewGroup(cfg *config.Config, router *echo.Group, postgres postgres.Client) {
 	udb := userDatabase.New(postgres)
 	us := userService.New(udb)
 

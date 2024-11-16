@@ -12,7 +12,7 @@ import (
 	"go-clean/pkg/redis"
 )
 
-func NewRestAuth(cfg *config.Config, router *echo.Group, redis *redis.Redis, postgres *postgres.Postgres) {
+func NewRestAuth(cfg *config.Config, router *echo.Group, redis *redis.Redis, postgres postgres.Client) {
 	udb := userDatabase.New(postgres)
 	srvc := userService.New(udb)
 	st := restAuthStore.New(redis)

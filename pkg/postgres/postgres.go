@@ -3,14 +3,19 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go-clean/pkg/helpers"
 	"time"
 )
 
-type Postgres struct {
-	ctx  context.Context
-	pool *pgxpool.Pool
+type Client interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Close()
 }
 
 type Options struct {
@@ -22,7 +27,7 @@ type Options struct {
 	SSLMode  bool
 }
 
-func New(ctx context.Context, options *Options) (*Postgres, error) {
+func New(ctx context.Context, options *Options) (Client, error) {
 	connectionString := getConnectionString(options)
 
 	pool, err := connect(ctx, connectionString)
@@ -30,7 +35,7 @@ func New(ctx context.Context, options *Options) (*Postgres, error) {
 		return nil, err
 	}
 
-	return &Postgres{ctx: ctx, pool: pool}, nil
+	return pool, nil
 }
 
 func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
