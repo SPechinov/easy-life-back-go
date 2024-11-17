@@ -15,4 +15,5 @@ type groupDatabase interface {
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error)
 	GetUsersList(ctx context.Context, entity entities.GroupUsersListGet) ([]entities.GroupUser, error)
+	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
 }

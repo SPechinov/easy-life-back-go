@@ -19,6 +19,7 @@ var appErrorMapping = map[string]*rest_error.RestError{
 	client_error.ErrCodesIsNotEqual.Error():   rest_error.ErrCodesIsNotEqual,
 	client_error.ErrUserDeleted.Error():       rest_error.ErrUserDeleted,
 	client_error.ErrUserNotAdminGroup.Error(): rest_error.ErrUserNotAdminGroup,
+	client_error.ErrUserNotInGroup.Error():    rest_error.ErrUserNotInGroup,
 }
 
 func ResponseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

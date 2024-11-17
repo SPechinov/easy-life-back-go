@@ -91,10 +91,10 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 			public.groups.deleted_at AS group_deleted_at,
 			-- Admin
 			public.users_groups.invited_at AS admin_invited_ad,
+			public.users_groups.permission AS admin_permission,
 			public.users.id AS admin_id,
 			public.users.email AS admin_email,
 			public.users.phone AS admin_phone,
-			public.users.password AS admin_password,
 			public.users.first_name AS admin_first_name,
 			public.users.last_name AS admin_last_name,
 			public.users.created_at AS admin_created_at,
@@ -120,10 +120,10 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		&group.updatedAt,
 		&group.deletedAt,
 		&group.admin.invitedAt,
+		&group.admin.permission,
 		&group.admin.id,
 		&group.admin.email,
 		&group.admin.phone,
-		&group.admin.password,
 		&group.admin.firstName,
 		&group.admin.lastName,
 		&group.admin.createdAt,
@@ -143,15 +143,16 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		UpdatedAt: group.updatedAt.Format(time.RFC3339),
 		DeletedAt: helpers.GetPtrValueFromSQLNullTime(group.deletedAt, time.RFC3339),
 		Admin: entities.GroupUser{
-			ID:        group.admin.id,
-			Email:     helpers.GetValueFromSQLNullString(group.admin.email),
-			Phone:     helpers.GetValueFromSQLNullString(group.admin.phone),
-			FirstName: group.admin.firstName,
-			LastName:  helpers.GetPtrValueFromSQLNullString(group.admin.lastName),
-			CreatedAt: group.admin.createdAt.Format(time.RFC3339),
-			UpdatedAt: group.admin.updatedAt.Format(time.RFC3339),
-			DeletedAt: helpers.GetPtrValueFromSQLNullTime(group.admin.deletedAt, time.RFC3339),
-			InvitedAt: group.admin.invitedAt.Format(time.RFC3339),
+			ID:         group.admin.id,
+			Email:      helpers.GetValueFromSQLNullString(group.admin.email),
+			Phone:      helpers.GetValueFromSQLNullString(group.admin.phone),
+			FirstName:  group.admin.firstName,
+			LastName:   helpers.GetPtrValueFromSQLNullString(group.admin.lastName),
+			Permission: group.admin.permission,
+			CreatedAt:  group.admin.createdAt.Format(time.RFC3339),
+			UpdatedAt:  group.admin.updatedAt.Format(time.RFC3339),
+			DeletedAt:  helpers.GetPtrValueFromSQLNullTime(group.admin.deletedAt, time.RFC3339),
+			InvitedAt:  group.admin.invitedAt.Format(time.RFC3339),
 		},
 	}, nil
 }
@@ -161,11 +162,11 @@ func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupUsersList
 		-- Users groups
 		SELECT
    			public.users_groups.invited_at,
+   			public.users_groups.permission,
    			
    			public.users.id,
    			public.users.email,
    			public.users.phone,
-   			public.users.password,
    			public.users.first_name,
    			public.users.last_name,
    			public.users.created_at,
@@ -191,10 +192,10 @@ func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupUsersList
 		var user dataUser
 		err = rows.Scan(
 			&user.invitedAt,
+			&user.permission,
 			&user.id,
 			&user.email,
 			&user.phone,
-			&user.password,
 			&user.firstName,
 			&user.lastName,
 			&user.createdAt,
@@ -208,15 +209,16 @@ func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupUsersList
 		}
 
 		users = append(users, entities.GroupUser{
-			ID:        user.id,
-			Email:     helpers.GetValueFromSQLNullString(user.email),
-			Phone:     helpers.GetValueFromSQLNullString(user.phone),
-			FirstName: user.firstName,
-			LastName:  helpers.GetPtrValueFromSQLNullString(user.lastName),
-			CreatedAt: user.createdAt.Format(time.RFC3339),
-			UpdatedAt: user.updatedAt.Format(time.RFC3339),
-			DeletedAt: helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
-			InvitedAt: user.invitedAt.Format(time.RFC3339),
+			ID:         user.id,
+			Email:      helpers.GetValueFromSQLNullString(user.email),
+			Phone:      helpers.GetValueFromSQLNullString(user.phone),
+			FirstName:  user.firstName,
+			LastName:   helpers.GetPtrValueFromSQLNullString(user.lastName),
+			Permission: user.permission,
+			CreatedAt:  user.createdAt.Format(time.RFC3339),
+			UpdatedAt:  user.updatedAt.Format(time.RFC3339),
+			DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
+			InvitedAt:  user.invitedAt.Format(time.RFC3339),
 		})
 	}
 
@@ -241,4 +243,63 @@ func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) (bool,
 		return false, err
 	}
 	return count > 0, nil
+}
+
+func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
+	query := `
+		-- Users groups
+		SELECT
+   			public.users_groups.invited_at,
+   			public.users_groups.permission,
+   			
+   			public.users.id,
+   			public.users.email,
+   			public.users.phone,
+   			public.users.first_name,
+   			public.users.last_name,
+   			public.users.created_at,
+   			public.users.updated_at,
+   			public.users.deleted_at
+		FROM public.users_groups
+
+		LEFT JOIN public.users
+			ON public.users.id = public.users_groups.user_id
+
+		WHERE  public.users_groups.user_id = $1 AND public.users_groups.group_id = $2
+	`
+
+	var user dataUser
+	err := g.postgres.QueryRow(ctx, query, userID, groupID).Scan(
+		&user.invitedAt,
+		&user.permission,
+		&user.id,
+		&user.email,
+		&user.phone,
+		&user.firstName,
+		&user.lastName,
+		&user.createdAt,
+		&user.updatedAt,
+		&user.deletedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+
+		logger.Error(ctx, err)
+		return nil, err
+	}
+
+	return &entities.GroupUser{
+		ID:         user.id,
+		Email:      helpers.GetValueFromSQLNullString(user.email),
+		Phone:      helpers.GetValueFromSQLNullString(user.phone),
+		FirstName:  user.firstName,
+		LastName:   helpers.GetPtrValueFromSQLNullString(user.lastName),
+		Permission: user.permission,
+		CreatedAt:  user.createdAt.Format(time.RFC3339),
+		UpdatedAt:  user.updatedAt.Format(time.RFC3339),
+		DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
+		InvitedAt:  user.invitedAt.Format(time.RFC3339),
+	}, nil
 }

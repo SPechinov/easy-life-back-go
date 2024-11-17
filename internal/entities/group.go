@@ -12,15 +12,16 @@ type Group struct {
 }
 
 type GroupUser struct {
-	ID        string
-	Email     string
-	Phone     string
-	FirstName string
-	LastName  *string
-	CreatedAt string
-	UpdatedAt string
-	DeletedAt *string
-	InvitedAt string
+	ID         string
+	Email      string
+	Phone      string
+	FirstName  string
+	LastName   *string
+	Permission int
+	CreatedAt  string
+	UpdatedAt  string
+	DeletedAt  *string
+	InvitedAt  string
 }
 
 func (g Group) Deleted() bool {

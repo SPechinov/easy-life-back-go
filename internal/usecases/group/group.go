@@ -33,3 +33,15 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 	}
 	return g.groupService.Patch(ctx, entity)
 }
+
+func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.Group, error) {
+	user, err := g.groupService.GetGroupUser(ctx, userID, entity.GroupID)
+	if user != nil && err != nil {
+		return nil, client_error.ErrUserNotAdminGroup
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return g.groupService.Get(ctx, entity)
+}

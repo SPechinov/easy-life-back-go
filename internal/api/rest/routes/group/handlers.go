@@ -51,6 +51,42 @@ func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
+func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	groupID := c.Param("groupID")
+	if groupID == "" {
+		return rest_error.ErrInvalidParams
+	}
+
+	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	logger.Debug(ctx, "Start")
+	ctx = logger.WithGroupID(ctx, groupID)
+
+	group, err := controller.useCases.Get(
+		ctx,
+		userID,
+		entities.GroupGet{
+			GroupID: groupID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	ctx = logger.WithGroupID(ctx, group.ID)
+	logger.Debug(ctx, "Finish")
+	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+}
+
 func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
