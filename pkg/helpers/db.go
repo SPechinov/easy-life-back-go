@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"database/sql"
-	"time"
 )
 
 func GetValueFromSQLNullString(data sql.NullString) string {
@@ -23,7 +22,7 @@ func GetPtrValueFromSQLNullString(data sql.NullString) *string {
 
 func GetPtrValueFromSQLNullTime(data sql.NullTime, format string) *string {
 	if data.Valid {
-		StrToPtr(data.Time.Format(time.RFC3339))
+		StrToPtr(data.Time.Format(format))
 	}
 
 	return nil
