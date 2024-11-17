@@ -24,4 +24,5 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
 	authRouter.POST("", controller.handlerGroupAdd)
+	authRouter.PATCH("/:groupID", controller.handlerGroupPatch)
 }

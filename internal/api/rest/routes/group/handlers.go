@@ -50,3 +50,55 @@ func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 	logger.Debug(ctx, "Finish")
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
+
+func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	groupID := c.Param("groupID")
+	if groupID == "" {
+		return rest_error.ErrInvalidParams
+	}
+
+	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	dto := new(PatchDTO)
+	err := c.Bind(dto)
+	if err != nil {
+		return rest_error.ErrInvalidBodyData
+	}
+
+	ctx = logger.WithGroupID(ctx, groupID)
+	ctx = logger.WithUserID(ctx, userID)
+
+	if dto.Name != nil {
+		ctx = logger.WithGroupName(ctx, *dto.Name)
+	}
+	logger.Debug(ctx, "Start")
+
+	err = validatePatchDTO(dto)
+	if err != nil {
+		return err
+	}
+
+	group, err := controller.useCases.Patch(
+		ctx,
+		userID,
+		entities.GroupPatch{
+			GroupID: groupID,
+			Name:    dto.Name,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(ctx, "Finish")
+	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+}

@@ -19,3 +19,10 @@ func validateAddDTO(dto *AddDTO) error {
 	)
 	return checkError(err)
 }
+
+func validatePatchDTO(dto *PatchDTO) error {
+	err := validation.ValidateStruct(dto,
+		validation.Field(&dto.Name, validation.RuneLength(validation_rules.LenMinGroupName, validation_rules.LenMaxGroupName)),
+	)
+	return checkError(err)
+}
