@@ -60,19 +60,43 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) (*entitie
 }
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
-	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{
-		GroupID: entity.GroupID,
-	})
-	if err != nil {
+	groupChannel := make(chan *entities.Group, 1)
+	usersChannel := make(chan []entities.GroupUser, 1)
+	errChannel := make(chan error, 2)
+
+	go func() {
+		group, err := g.groupDatabase.Get(ctx, entities.GroupGet{GroupID: entity.GroupID})
+		if err != nil {
+			errChannel <- err
+			return
+		}
+		groupChannel <- group
+	}()
+
+	go func() {
+		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupUsersListGet{GroupID: entity.GroupID})
+		if err != nil {
+			errChannel <- err
+			return
+		}
+		usersChannel <- users
+	}()
+
+	var group *entities.Group
+	var users []entities.GroupUser
+
+	select {
+	case group = <-groupChannel:
+	case err := <-errChannel:
 		return nil, err
 	}
 
-	users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupUsersListGet{
-		GroupID: entity.GroupID,
-	})
-	if err != nil {
+	select {
+	case users = <-usersChannel:
+	case err := <-errChannel:
 		return nil, err
 	}
+
 	group.Users = users
 
 	return group, nil
