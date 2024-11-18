@@ -69,7 +69,6 @@ func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
 	}
 
 	logger.Debug(ctx, "Start")
-	ctx = logger.WithGroupID(ctx, groupID)
 
 	group, err := controller.useCases.Get(
 		ctx,
@@ -82,7 +81,6 @@ func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
 		return err
 	}
 
-	ctx = logger.WithGroupID(ctx, group.ID)
 	logger.Debug(ctx, "Finish")
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
@@ -109,8 +107,6 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
-
-	ctx = logger.WithGroupID(ctx, groupID)
 
 	if dto.Name != nil {
 		ctx = logger.WithGroupName(ctx, *dto.Name)
