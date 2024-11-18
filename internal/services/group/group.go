@@ -59,7 +59,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}()
 
 	go func() {
-		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupUsersListGet{GroupID: entity.GroupID})
+		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupGetUsersList{GroupID: entity.GroupID})
 		if err != nil {
 			errChannel <- err
 			return
@@ -93,4 +93,16 @@ func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) (bool,
 
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
 	return g.groupDatabase.GetGroupUser(ctx, userID, groupID)
+}
+
+func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
+	return g.groupDatabase.GetUsersList(ctx, entity)
+}
+
+func (g *Group) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
+	return g.groupDatabase.InviteUser(ctx, entity)
+}
+
+func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
+	return g.groupDatabase.ExcludeUser(ctx, entity)
 }

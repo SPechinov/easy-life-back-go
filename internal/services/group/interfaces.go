@@ -14,6 +14,8 @@ type groupDatabase interface {
 	Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error)
-	GetUsersList(ctx context.Context, entity entities.GroupUsersListGet) ([]entities.GroupUser, error)
+	GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
+	InviteUser(ctx context.Context, entity entities.GroupInviteUser) error
+	ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error
 }

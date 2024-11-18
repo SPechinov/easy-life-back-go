@@ -32,7 +32,7 @@ type GroupGet struct {
 	GroupID string
 }
 
-type GroupUsersListGet struct {
+type GroupGetUsersList struct {
 	GroupID string
 }
 
@@ -44,4 +44,14 @@ type GroupAdd struct {
 type GroupPatch struct {
 	GroupID string
 	Name    *string
+}
+
+type GroupInviteUser struct {
+	GroupID string
+	UserID  string
+}
+
+type GroupExcludeUser struct {
+	GroupID string
+	UserID  string
 }

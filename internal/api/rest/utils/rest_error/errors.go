@@ -12,9 +12,11 @@ const (
 	errKeyCodeMaxAttempts   = "codeMaxAttempts"
 	errKeyCodesIsNotEqual   = "codesIsNotEqual"
 	errKeyUserDeleted       = "userDeleted"
+	errKeyUserInvited       = "userInvited"
 	errKeyInvalidParams     = "invalidParams"
 	errKeyUserNotAdminGroup = "userNotAdminGroup"
 	errKeyUserNotInGroup    = "userNotInGroup"
+	errKeyUserAdminGroup    = "userAdminGroup"
 	errKeySomethingHappen   = "somethingHappen"
 )
 
@@ -27,7 +29,9 @@ var ErrUserExists = New(http.StatusBadRequest, errKeyUserExists)
 var ErrCodeMaxAttempts = New(http.StatusBadRequest, errKeyCodeMaxAttempts)
 var ErrCodesIsNotEqual = New(http.StatusBadRequest, errKeyCodesIsNotEqual)
 var ErrUserDeleted = New(http.StatusBadRequest, errKeyUserDeleted)
+var ErrUserInvited = New(http.StatusBadRequest, errKeyUserInvited)
 var ErrInvalidParams = New(http.StatusBadRequest, errKeyInvalidParams)
 var ErrUserNotAdminGroup = New(http.StatusBadRequest, errKeyUserNotAdminGroup)
+var ErrUserAdminGroup = New(http.StatusBadRequest, errKeyUserAdminGroup)
 var ErrUserNotInGroup = New(http.StatusBadRequest, errKeyUserNotInGroup)
 var ErrSomethingHappen = New(http.StatusInternalServerError, errKeySomethingHappen)

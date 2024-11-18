@@ -5,6 +5,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+func With(ctx context.Context, value logrus.Fields) context.Context {
+	l := Get(ctx)
+	l = l.WithFields(value)
+	return Set(ctx, l)
+}
+
 func WithSessionID(ctx context.Context, sessionID string) context.Context {
 	l := Get(ctx)
 	l = l.WithFields(logrus.Fields{

@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"go-clean/internal/constants"
 	"go-clean/internal/entities"
+	"go-clean/pkg/client_error"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
 	"go-clean/pkg/postgres"
@@ -79,6 +81,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 
 	return nil
 }
+
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
 	query := `
 		SELECT
@@ -157,7 +160,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}, nil
 }
 
-func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupUsersListGet) ([]entities.GroupUser, error) {
+func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
 	query := `
 		-- Users groups
 		SELECT
@@ -302,4 +305,40 @@ func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*enti
 		DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
 		InvitedAt:  user.invitedAt.Format(time.RFC3339),
 	}, nil
+}
+
+func (g *Group) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
+	query :=
+		`
+			INSERT INTO public.users_groups (group_id, user_id, permission)
+			VALUES ($1, $2, 0)
+		`
+
+	_, err := g.postgres.Exec(ctx, query, entity.GroupID, entity.UserID)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return client_error.ErrUserInvited
+		}
+
+		logger.Error(ctx, err)
+		return err
+	}
+
+	return nil
+}
+
+func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
+	query :=
+		`
+			DELETE FROM public.users_groups WHERE group_id = $1 AND user_id = $2 AND permission != $3
+		`
+
+	_, err := g.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)
+	if err != nil {
+		logger.Error(ctx, err)
+		return err
+	}
+
+	return nil
 }

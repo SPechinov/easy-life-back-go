@@ -3,6 +3,7 @@ package group
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 	"go-clean/internal/api/rest"
 	"go-clean/internal/api/rest/constants"
 	"go-clean/internal/api/rest/utils/rest_error"
@@ -85,6 +86,40 @@ func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
+func (controller *restGroupController) handlerGroupGetUsersList(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	groupID := c.Param("groupID")
+	if groupID == "" {
+		return rest_error.ErrInvalidParams
+	}
+
+	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	logger.Debug(ctx, "Start")
+
+	usersList, err := controller.useCases.GetUsersList(
+		ctx,
+		userID,
+		entities.GroupGetUsersList{
+			GroupID: groupID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(ctx, "Finish")
+	return c.JSON(http.StatusOK, rest.NewResponseSuccess(usersList))
+}
+
 func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
@@ -132,4 +167,102 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 
 	logger.Debug(ctx, "Finish")
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+}
+
+func (controller *restGroupController) handlerGroupInviteUser(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	groupID := c.Param("groupID")
+	if groupID == "" {
+		return rest_error.ErrInvalidParams
+	}
+
+	adminID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	dto := new(InviteDTO)
+	err := c.Bind(dto)
+	if err != nil {
+		return rest_error.ErrInvalidBodyData
+	}
+
+	logger.Debug(ctx, "Start")
+
+	err = validateInviteDTO(dto)
+	if err != nil {
+		return err
+	}
+	ctx = logger.With(ctx, logrus.Fields{
+		"InviteUserID": dto.UserID,
+	})
+
+	err = controller.useCases.InviteUser(
+		ctx,
+		adminID,
+		entities.GroupInviteUser{
+			UserID:  dto.UserID,
+			GroupID: groupID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(ctx, "Finish")
+	return c.NoContent(http.StatusNoContent)
+}
+
+func (controller *restGroupController) handlerGroupExcludeUser(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	groupID := c.Param("groupID")
+	if groupID == "" {
+		return rest_error.ErrInvalidParams
+	}
+
+	adminID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	dto := new(ExcludeDTO)
+	err := c.Bind(dto)
+	if err != nil {
+		return rest_error.ErrInvalidBodyData
+	}
+
+	logger.Debug(ctx, "Start")
+
+	err = validateExcludeDTO(dto)
+	if err != nil {
+		return err
+	}
+	ctx = logger.With(ctx, logrus.Fields{
+		"ExcludeUserID": dto.UserID,
+	})
+
+	err = controller.useCases.ExcludeUser(
+		ctx,
+		adminID,
+		entities.GroupExcludeUser{
+			UserID:  dto.UserID,
+			GroupID: groupID,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(ctx, "Finish")
+	return c.NoContent(http.StatusNoContent)
 }
