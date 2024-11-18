@@ -14,4 +14,5 @@ type groupService interface {
 	GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)
 	InviteUser(ctx context.Context, entity entities.GroupInviteUser) error
 	ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error
+	IsDeletedGroup(ctx context.Context, groupID string) bool
 }

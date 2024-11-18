@@ -25,8 +25,8 @@ func (controller *restGroupController) Register(router *echo.Group) {
 
 	authRouter.POST("", controller.handlerGroupAdd)
 	authRouter.GET("/:groupID", controller.handlerGroupGet)
-	authRouter.GET("/:groupID/users-list", controller.handlerGroupGetUsersList)
 	authRouter.PATCH("/:groupID", controller.handlerGroupPatch)
+	authRouter.GET("/:groupID/users-list", controller.handlerGroupGetUsersList)
 	authRouter.POST("/:groupID/invite", controller.handlerGroupInviteUser)
 	authRouter.POST("/:groupID/exclude", controller.handlerGroupExcludeUser)
 }

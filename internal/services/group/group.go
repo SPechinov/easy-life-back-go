@@ -106,3 +106,7 @@ func (g *Group) InviteUser(ctx context.Context, entity entities.GroupInviteUser)
 func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
 	return g.groupDatabase.ExcludeUser(ctx, entity)
 }
+
+func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
+	return g.groupDatabase.IsDeletedGroup(ctx, groupID)
+}

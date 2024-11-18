@@ -23,28 +23,34 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	return g.groupService.Add(ctx, entity)
 }
 
-func (g *Group) Patch(ctx context.Context, adminID string, entity entities.GroupPatch) (*entities.Group, error) {
+func (g *Group) Patch(ctx context.Context, adminID string, entity entities.GroupPatch) error {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return client_error.ErrGroupDeleted
+	}
+
 	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if !isAdmin {
-		return nil, client_error.ErrUserNotAdminGroup
+		return client_error.ErrUserNotAdminGroup
 	}
+
 	err = g.groupService.Patch(ctx, entity)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	group, err := g.groupService.Get(ctx, entities.GroupGet{GroupID: entity.GroupID})
-	if err != nil {
-		return nil, err
-	}
-
-	return group, nil
+	return nil
 }
 
 func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.Group, error) {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return nil, client_error.ErrGroupDeleted
+	}
+
 	user, err := g.groupService.GetGroupUser(ctx, userID, entity.GroupID)
 	if user == nil && err == nil {
 		return nil, client_error.ErrUserNotInGroup
@@ -57,6 +63,11 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 }
 
 func (g *Group) GetUsersList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return nil, client_error.ErrGroupDeleted
+	}
+
 	user, err := g.groupService.GetGroupUser(ctx, userID, entity.GroupID)
 	if user == nil && err == nil {
 		return nil, client_error.ErrUserNotInGroup
@@ -71,6 +82,11 @@ func (g *Group) GetUsersList(ctx context.Context, userID string, entity entities
 }
 
 func (g *Group) InviteUser(ctx context.Context, adminID string, entity entities.GroupInviteUser) error {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return client_error.ErrGroupDeleted
+	}
+
 	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
 	if err != nil {
 		return err
@@ -88,6 +104,11 @@ func (g *Group) InviteUser(ctx context.Context, adminID string, entity entities.
 }
 
 func (g *Group) ExcludeUser(ctx context.Context, adminID string, entity entities.GroupExcludeUser) error {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return client_error.ErrGroupDeleted
+	}
+
 	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
 	if err != nil {
 		return err

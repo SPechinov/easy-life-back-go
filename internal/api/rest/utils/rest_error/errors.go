@@ -17,6 +17,7 @@ const (
 	errKeyUserNotAdminGroup = "userNotAdminGroup"
 	errKeyUserNotInGroup    = "userNotInGroup"
 	errKeyUserAdminGroup    = "userAdminGroup"
+	errKeyGroupNotExist     = "groupNotExist"
 	errKeySomethingHappen   = "somethingHappen"
 )
 
@@ -34,4 +35,5 @@ var ErrInvalidParams = New(http.StatusBadRequest, errKeyInvalidParams)
 var ErrUserNotAdminGroup = New(http.StatusBadRequest, errKeyUserNotAdminGroup)
 var ErrUserAdminGroup = New(http.StatusBadRequest, errKeyUserAdminGroup)
 var ErrUserNotInGroup = New(http.StatusBadRequest, errKeyUserNotInGroup)
+var ErrGroupNotExist = New(http.StatusBadRequest, errKeyGroupNotExist)
 var ErrSomethingHappen = New(http.StatusInternalServerError, errKeySomethingHappen)

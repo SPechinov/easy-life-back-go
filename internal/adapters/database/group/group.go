@@ -342,3 +342,21 @@ func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUse
 
 	return nil
 }
+
+func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
+	query := `
+		SELECT COUNT(*) FROM public.groups WHERE id = $1 AND deleted_at IS NULL
+	`
+
+	var count int
+	err := g.postgres.QueryRow(ctx, query, groupID).Scan(&count)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return true
+		}
+
+		logger.Error(ctx, err)
+		return true
+	}
+	return count == 0
+}

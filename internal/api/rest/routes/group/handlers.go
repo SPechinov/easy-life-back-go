@@ -153,7 +153,7 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 		return err
 	}
 
-	group, err := controller.useCases.Patch(
+	err = controller.useCases.Patch(
 		ctx,
 		userID,
 		entities.GroupPatch{
@@ -166,7 +166,7 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	}
 
 	logger.Debug(ctx, "Finish")
-	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+	return c.NoContent(http.StatusNoContent)
 }
 
 func (controller *restGroupController) handlerGroupInviteUser(c echo.Context) error {
