@@ -111,7 +111,6 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	}
 
 	ctx = logger.WithGroupID(ctx, groupID)
-	ctx = logger.WithUserID(ctx, userID)
 
 	if dto.Name != nil {
 		ctx = logger.WithGroupName(ctx, *dto.Name)

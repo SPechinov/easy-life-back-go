@@ -253,8 +253,6 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	ctx = logger.WithUserID(ctx, userID)
-
 	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(ctx, userID, sessionID, refreshJWT)
 	if err != nil {
 		return rest_error.ErrNotAuthorized
@@ -279,8 +277,6 @@ func (controller *restAuthController) handlerLogout(c echo.Context) error {
 	if !ok {
 		return rest_error.ErrNotAuthorized
 	}
-
-	ctx = logger.WithUserID(ctx, userID)
 
 	// Check SessionID
 	sessionID := utils.GetRequestSessionID(c)
@@ -312,8 +308,6 @@ func (controller *restAuthController) handlerLogoutAll(c echo.Context) error {
 	if !ok {
 		return rest_error.ErrNotAuthorized
 	}
-
-	ctx = logger.WithUserID(ctx, userID)
 
 	controller.useCases.LogoutAll(ctx, userID)
 

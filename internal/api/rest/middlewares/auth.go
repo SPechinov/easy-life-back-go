@@ -1,14 +1,17 @@
 package middlewares
 
 import (
+	"context"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go-clean/config"
+	restConstants "go-clean/internal/api/rest/constants"
 	"go-clean/internal/api/rest/utils"
 	"go-clean/internal/api/rest/utils/rest_error"
 	"go-clean/internal/constants"
 	"go-clean/pkg/helpers"
+	"go-clean/pkg/logger"
 )
 
 func isValidJWTPair(secretKey, accessJWT, refreshJWT string) (accessToken *jwt.Token, refreshToken *jwt.Token, err error) {
@@ -71,6 +74,14 @@ func AuthMiddleware(cfg *config.Config) func(next echo.HandlerFunc) echo.Handler
 
 			// Save in context
 			ctx.Set(constants.CTXUserIDKey, userID)
+
+			// Logging UserID
+			if loggerCtx, ok := ctx.Get(restConstants.CTXLoggerInCTX).(context.Context); !ok {
+				logger.Error(loggerCtx, "No context")
+			} else {
+				loggerCtx = logger.WithUserID(loggerCtx, userID)
+				ctx.Set(restConstants.CTXLoggerInCTX, loggerCtx)
+			}
 
 			return next(ctx)
 		}

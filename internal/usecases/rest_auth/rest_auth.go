@@ -36,8 +36,6 @@ func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionI
 	}
 	userID := user.ID
 
-	ctx = logger.WithUserID(ctx, userID)
-
 	if !helpers.CheckPasswordHash(data.Password, user.Password) {
 		logger.Debug(ctx, "Incorrect password")
 		return "", "", "", client_error.ErrIncorrectPassword
@@ -143,8 +141,6 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 		return err
 	}
 
-	ctx = logger.WithUserID(ctx, dbUser.ID)
-
 	if dbUser.Deleted() {
 		logger.Debug(ctx, "User deleted")
 		return client_error.ErrUserDeleted
@@ -191,8 +187,6 @@ func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.User
 	if err != nil {
 		return err
 	}
-
-	ctx = logger.WithUserID(ctx, dbUser.ID)
 
 	if dbUser.Deleted() {
 		logger.Debug(ctx, "User deleted")
