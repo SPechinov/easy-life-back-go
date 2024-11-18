@@ -44,7 +44,16 @@ func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error
 	fmt.Println("Postgres connecting...")
 	err := helpers.Repeatable(func() error {
 		fmt.Println("Postgres try to connect")
-		pl, poolErr := pgxpool.New(ctx, connectionString)
+		config, err := pgxpool.ParseConfig(connectionString)
+		if err != nil {
+			return err
+		}
+
+		config.MaxConns = 20
+		config.MinConns = 5
+		config.MaxConnIdleTime = 30 * time.Second
+
+		pl, poolErr := pgxpool.NewWithConfig(ctx, config)
 		if poolErr != nil {
 			return poolErr
 		}
