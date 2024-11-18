@@ -92,7 +92,7 @@ func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) erro
 func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAddConfirm) error {
 	authWayValue := data.AuthWay.GetAuthValue()
 
-	// Get code from store and compare
+	// GetInfo code from store and compare
 	storeCode, attempt, err := ra.store.GetRegistrationCode(ctx, authWayValue)
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 
 func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
 	authWayValue := data.AuthWay.GetAuthValue()
-	// Get code from store and compare
+	// GetInfo code from store and compare
 	storeCode, attempt, err := ra.store.GetForgotPasswordCode(ctx, authWayValue)
 	if err != nil {
 		return err

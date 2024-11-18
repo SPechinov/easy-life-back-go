@@ -62,6 +62,28 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 	return g.groupService.Get(ctx, entity)
 }
 
+func (g *Group) GetInfo(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
+	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
+	if isDeletedGroup {
+		return nil, client_error.ErrGroupDeleted
+	}
+
+	user, err := g.groupService.GetGroupUser(ctx, userID, entity.GroupID)
+	if user == nil && err == nil {
+		return nil, client_error.ErrUserNotInGroup
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	groupInfo, err := g.groupService.GetInfo(ctx, entity)
+	if err != nil {
+		return nil, err
+	}
+
+	return groupInfo, nil
+}
+
 func (g *Group) GetUsersList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
 	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.GroupID)
 	if isDeletedGroup {

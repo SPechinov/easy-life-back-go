@@ -82,7 +82,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
+func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.GroupInfo, error) {
 	query := `
 		SELECT
 		    -- Group
@@ -138,7 +138,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		return nil, err
 	}
 
-	return &entities.Group{
+	return &entities.GroupInfo{
 		ID:        group.id,
 		Name:      group.name,
 		IsPayed:   group.isPayed,

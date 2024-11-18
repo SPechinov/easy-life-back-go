@@ -23,16 +23,19 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 		return nil, err
 	}
 
-	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{
+	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{
 		GroupID: groupID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	group.Users = make([]entities.GroupUser, 0)
+	group := entities.Group{
+		GroupInfo: *groupInfo,
+		Users:     make([]entities.GroupUser, 0),
+	}
 
-	return group, nil
+	return &group, nil
 }
 
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
@@ -45,12 +48,12 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 }
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
-	groupChannel := make(chan *entities.Group, 1)
+	groupChannel := make(chan *entities.GroupInfo, 1)
 	usersChannel := make(chan []entities.GroupUser, 1)
 	errChannel := make(chan error, 2)
 
 	go func() {
-		group, err := g.groupDatabase.Get(ctx, entities.GroupGet{GroupID: entity.GroupID})
+		group, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{GroupID: entity.GroupID})
 		if err != nil {
 			errChannel <- err
 			return
@@ -67,11 +70,11 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		usersChannel <- users
 	}()
 
-	var group *entities.Group
+	var groupInfo *entities.GroupInfo
 	var users []entities.GroupUser
 
 	select {
-	case group = <-groupChannel:
+	case groupInfo = <-groupChannel:
 	case err := <-errChannel:
 		return nil, err
 	}
@@ -82,9 +85,23 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		return nil, err
 	}
 
+	group := entities.Group{
+		GroupInfo: *groupInfo,
+		Users:     users,
+	}
+
 	group.Users = users
 
-	return group, nil
+	return &group, nil
+}
+
+func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
+	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{GroupID: entity.GroupID})
+	if err != nil {
+		return nil, err
+	}
+
+	return groupInfo, nil
 }
 
 func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error) {

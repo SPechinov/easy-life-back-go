@@ -1,6 +1,6 @@
 package entities
 
-type Group struct {
+type GroupInfo struct {
 	ID        string
 	Name      string
 	Admin     GroupUser
@@ -8,7 +8,11 @@ type Group struct {
 	CreatedAt string
 	UpdatedAt string
 	DeletedAt *string
-	Users     []GroupUser
+}
+
+type Group struct {
+	GroupInfo
+	Users []GroupUser
 }
 
 type GroupUser struct {
@@ -29,6 +33,10 @@ func (g Group) Deleted() bool {
 }
 
 type GroupGet struct {
+	GroupID string
+}
+
+type GroupGetInfo struct {
 	GroupID string
 }
 

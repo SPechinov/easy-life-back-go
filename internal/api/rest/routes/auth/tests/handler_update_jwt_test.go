@@ -131,7 +131,7 @@ func TestHandler_updateJWT(t *testing.T) {
 //
 //				// Assert
 //				assert.Equal(t, testCase.expectedStatusCode, w.Code)
-//				assert.Equal(t, testCase.expectedAccessJWT, w.Result().Header.Get(constants.HeaderResponseAccessJWT))
+//				assert.Equal(t, testCase.expectedAccessJWT, w.Result().Header.GetInfo(constants.HeaderResponseAccessJWT))
 //				assertRefreshJWTInResponse(true)
 //			} else {
 //				// Perform request
@@ -139,7 +139,7 @@ func TestHandler_updateJWT(t *testing.T) {
 //
 //				// Assert
 //				assert.Equal(t, testCase.expectedStatusCode, w.Code)
-//				assert.Equal(t, "", w.Result().Header.Get(constants.HeaderResponseAccessJWT))
+//				assert.Equal(t, "", w.Result().Header.GetInfo(constants.HeaderResponseAccessJWT))
 //				assertRefreshJWTInResponse(false)
 //
 //				var responseBad *rest.ResponseBad
