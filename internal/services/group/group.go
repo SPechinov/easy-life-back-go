@@ -35,28 +35,13 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	return group, nil
 }
 
-func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) (*entities.Group, error) {
+func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	err := g.groupDatabase.Patch(ctx, entity)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{
-		GroupID: entity.GroupID,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupUsersListGet{
-		GroupID: entity.GroupID,
-	})
-	if err != nil {
-		return nil, err
-	}
-	group.Users = users
-
-	return group, nil
+	return nil
 }
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {

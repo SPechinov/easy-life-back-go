@@ -31,13 +31,23 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 	if !isAdmin {
 		return nil, client_error.ErrUserNotAdminGroup
 	}
-	return g.groupService.Patch(ctx, entity)
+	err = g.groupService.Patch(ctx, entity)
+	if err != nil {
+		return nil, err
+	}
+
+	group, err := g.groupService.Get(ctx, entities.GroupGet{GroupID: entity.GroupID})
+	if err != nil {
+		return nil, err
+	}
+
+	return group, nil
 }
 
 func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.Group, error) {
 	user, err := g.groupService.GetGroupUser(ctx, userID, entity.GroupID)
-	if user != nil && err != nil {
-		return nil, client_error.ErrUserNotAdminGroup
+	if user == nil && err == nil {
+		return nil, client_error.ErrUserNotInGroup
 	}
 	if err != nil {
 		return nil, err
