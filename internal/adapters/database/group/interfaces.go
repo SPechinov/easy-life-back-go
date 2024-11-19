@@ -26,8 +26,3 @@ type dataUser struct {
 	updatedAt  time.Time
 	deletedAt  sql.NullTime
 }
-
-type dataGroupWithAdmin struct {
-	dataGroup
-	admin dataUser
-}

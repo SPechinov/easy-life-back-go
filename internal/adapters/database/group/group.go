@@ -85,53 +85,23 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.GroupInfo, error) {
 	query := `
 		SELECT
-		    -- Group
 			public.groups.id AS group_id,
 			public.groups.name AS group_name,
 			public.groups.is_payed AS group_is_payed,
 			public.groups.created_at AS group_created_at,
 			public.groups.updated_at AS group_updated_at,
-			public.groups.deleted_at AS group_deleted_at,
-			-- Admin
-			public.users_groups.invited_at AS admin_invited_ad,
-			public.users_groups.permission AS admin_permission,
-			public.users.id AS admin_id,
-			public.users.email AS admin_email,
-			public.users.phone AS admin_phone,
-			public.users.first_name AS admin_first_name,
-			public.users.last_name AS admin_last_name,
-			public.users.created_at AS admin_created_at,
-			public.users.updated_at AS admin_updated_at,
-			public.users.deleted_at AS admin_deleted_at
-		FROM public.groups
-		
-		-- Admin
-		LEFT JOIN public.users_groups
-			   ON public.users_groups.group_id = public.groups.id AND public.users_groups.permission = $2
-		LEFT JOIN public.users
-			   ON public.users.id = public.users_groups.user_id
-		
-		WHERE public.groups.id = $1
+			public.groups.deleted_at AS group_deleted_at
+		FROM public.groups WHERE public.groups.id = $1
 	`
 
-	group := new(dataGroupWithAdmin)
-	err := g.postgres.QueryRow(ctx, query, entity.GroupID, constants.DefaultAdminPermission).Scan(
+	group := new(dataGroup)
+	err := g.postgres.QueryRow(ctx, query, entity.GroupID).Scan(
 		&group.id,
 		&group.name,
 		&group.isPayed,
 		&group.createdAt,
 		&group.updatedAt,
 		&group.deletedAt,
-		&group.admin.invitedAt,
-		&group.admin.permission,
-		&group.admin.id,
-		&group.admin.email,
-		&group.admin.phone,
-		&group.admin.firstName,
-		&group.admin.lastName,
-		&group.admin.createdAt,
-		&group.admin.updatedAt,
-		&group.admin.deletedAt,
 	)
 	if err != nil {
 		logger.Error(ctx, err)
@@ -145,18 +115,6 @@ func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entitie
 		CreatedAt: group.createdAt.Format(time.RFC3339),
 		UpdatedAt: group.updatedAt.Format(time.RFC3339),
 		DeletedAt: helpers.GetPtrValueFromSQLNullTime(group.deletedAt, time.RFC3339),
-		Admin: entities.GroupUser{
-			ID:         group.admin.id,
-			Email:      helpers.GetValueFromSQLNullString(group.admin.email),
-			Phone:      helpers.GetValueFromSQLNullString(group.admin.phone),
-			FirstName:  group.admin.firstName,
-			LastName:   helpers.GetPtrValueFromSQLNullString(group.admin.lastName),
-			Permission: group.admin.permission,
-			CreatedAt:  group.admin.createdAt.Format(time.RFC3339),
-			UpdatedAt:  group.admin.updatedAt.Format(time.RFC3339),
-			DeletedAt:  helpers.GetPtrValueFromSQLNullTime(group.admin.deletedAt, time.RFC3339),
-			InvitedAt:  group.admin.invitedAt.Format(time.RFC3339),
-		},
 	}, nil
 }
 

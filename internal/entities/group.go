@@ -3,7 +3,6 @@ package entities
 type GroupInfo struct {
 	ID        string
 	Name      string
-	Admin     GroupUser
 	IsPayed   bool
 	CreatedAt string
 	UpdatedAt string
