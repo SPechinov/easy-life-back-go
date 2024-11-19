@@ -8,10 +8,10 @@ type PatchDTO struct {
 	Name *string `json:"name" form:"name"`
 }
 
-type InviteDTO struct {
+type InviteUserDTO struct {
 	UserID string `json:"userId" form:"userId"`
 }
 
-type ExcludeDTO struct {
+type ExcludeUserDTO struct {
 	UserID string `json:"userId" form:"userId"`
 }

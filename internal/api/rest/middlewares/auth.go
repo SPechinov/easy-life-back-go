@@ -50,17 +50,17 @@ func isValidDataInJWTPair(accessToken *jwt.Token, refreshToken *jwt.Token) (user
 // UserID, accessJWT, refreshJWT, sessionID contain in echo context
 func AuthMiddleware(cfg *config.Config) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(ctx echo.Context) error {
+		return func(echoCtx echo.Context) error {
 			// Check SessionID
-			sessionID := utils.GetRequestSessionID(ctx)
+			sessionID := utils.GetRequestSessionID(echoCtx)
 			err := uuid.Validate(sessionID)
 			if err != nil {
 				return rest_error.ErrNotAuthorized
 			}
 
 			// Check JWTs
-			accessJWT := utils.GetRequestAccessJWT(ctx)
-			refreshJWT := utils.GetRequestRefreshJWT(ctx)
+			accessJWT := utils.GetRequestAccessJWT(echoCtx)
+			refreshJWT := utils.GetRequestRefreshJWT(echoCtx)
 
 			accessToken, refreshToken, err := isValidJWTPair(cfg.HTTPAuth.JWTSecretKey, accessJWT, refreshJWT)
 			if err != nil {
@@ -73,17 +73,17 @@ func AuthMiddleware(cfg *config.Config) func(next echo.HandlerFunc) echo.Handler
 			}
 
 			// Save in context
-			ctx.Set(constants.CTXUserIDKey, userID)
+			echoCtx.Set(constants.CTXUserIDKey, userID)
 
 			// Logging UserID
-			if loggerCtx, ok := ctx.Get(restConstants.CTXLoggerInCTX).(context.Context); !ok {
+			if loggerCtx, ok := echoCtx.Get(restConstants.CTXLoggerInCTX).(context.Context); !ok {
 				logger.Error(loggerCtx, "No context")
 			} else {
 				loggerCtx = logger.WithUserID(loggerCtx, userID)
-				ctx.Set(restConstants.CTXLoggerInCTX, loggerCtx)
+				echoCtx.Set(restConstants.CTXLoggerInCTX, loggerCtx)
 			}
 
-			return next(ctx)
+			return next(echoCtx)
 		}
 	}
 }

@@ -7,9 +7,9 @@ import (
 )
 
 func RequestIDMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(echoCtx echo.Context) error {
 		requestID := uuid.New().String()
-		c.Response().Header().Set(constants.HeaderXRequestID, requestID)
-		return next(c)
+		echoCtx.Response().Header().Set(constants.HeaderXRequestID, requestID)
+		return next(echoCtx)
 	}
 }

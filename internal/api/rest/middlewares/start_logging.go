@@ -8,19 +8,27 @@ import (
 )
 
 func StartLogging(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		requestID := c.Response().Header().Get(constants.HeaderXRequestID)
+	return func(echoCtx echo.Context) error {
+		requestID := echoCtx.Response().Header().Get(constants.HeaderXRequestID)
 
 		ctx := context.Background()
 		ctx = logger.WithRequestID(ctx, requestID)
-		ctx = logger.WithURL(ctx, c.Request().RequestURI)
+		ctx = logger.WithURL(ctx, echoCtx.Request().RequestURI)
 
 		// Group ID
-		if groupID := c.Param("groupID"); groupID != "" {
+		if groupID := echoCtx.Param("groupID"); groupID != "" {
 			ctx = logger.WithGroupID(ctx, groupID)
 		}
+		echoCtx.Set(constants.CTXLoggerInCTX, ctx)
 
-		c.Set(constants.CTXLoggerInCTX, ctx)
-		return next(c)
+		logger.Debug(ctx, "Start")
+		err := next(echoCtx)
+
+		if err != nil {
+			logger.Debug(ctx, "Err")
+		} else {
+			logger.Debug(ctx, "Finish")
+		}
+		return err
 	}
 }

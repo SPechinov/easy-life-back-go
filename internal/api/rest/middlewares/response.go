@@ -26,8 +26,8 @@ var appErrorMapping = map[string]*rest_error.RestError{
 }
 
 func ResponseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		err := next(c)
+	return func(echoCtx echo.Context) error {
+		err := next(echoCtx)
 
 		if err == nil {
 			return nil
@@ -40,23 +40,23 @@ func ResponseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		switch {
 		// Rest error
 		case errors.As(err, &restError):
-			return c.JSON(restError.HttpCode, rest.NewResponseBad(restError.Code))
+			return echoCtx.JSON(restError.HttpCode, rest.NewResponseBad(restError.Code))
 
 		// Validation error
 		case errors.As(err, &validationError):
-			return c.JSON(http.StatusBadRequest, rest.NewResponseBadValidation(validationError.Message))
+			return echoCtx.JSON(http.StatusBadRequest, rest.NewResponseBadValidation(validationError.Message))
 
 		// Client error
 		case errors.As(err, &clientError):
 			value, exist := appErrorMapping[clientError.Code()]
 			if !exist {
-				return c.JSON(rest_error.ErrSomethingHappen.HttpCode, rest.NewResponseBad(rest_error.ErrSomethingHappen.Code))
+				return echoCtx.JSON(rest_error.ErrSomethingHappen.HttpCode, rest.NewResponseBad(rest_error.ErrSomethingHappen.Code))
 			}
-			return c.JSON(value.HttpCode, rest.NewResponseBad(value.Code))
+			return echoCtx.JSON(value.HttpCode, rest.NewResponseBad(value.Code))
 
 		// Ops. PANIC
 		default:
-			return c.JSON(rest_error.ErrSomethingHappen.HttpCode, rest.NewResponseBad(rest_error.ErrSomethingHappen.Code))
+			return echoCtx.JSON(rest_error.ErrSomethingHappen.HttpCode, rest.NewResponseBad(rest_error.ErrSomethingHappen.Code))
 		}
 	}
 }
