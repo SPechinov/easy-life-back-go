@@ -1,6 +1,6 @@
 package entities
 
-type GroupInfo struct {
+type Group struct {
 	ID        string
 	Name      string
 	IsPayed   bool
@@ -9,12 +9,12 @@ type GroupInfo struct {
 	DeletedAt *string
 }
 
-func (g GroupInfo) Deleted() bool {
+func (g Group) Deleted() bool {
 	return g.DeletedAt != nil
 }
 
 type GroupFull struct {
-	GroupInfo
+	Group
 	Users []GroupUser
 }
 

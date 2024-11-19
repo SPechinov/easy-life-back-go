@@ -23,19 +23,19 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 		return nil, err
 	}
 
-	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{
+	group, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{
 		ID: groupID,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	group := entities.GroupFull{
-		GroupInfo: *groupInfo,
-		Users:     make([]entities.GroupUser, 0),
+	groupFull := entities.GroupFull{
+		Group: *group,
+		Users: make([]entities.GroupUser, 0),
 	}
 
-	return &group, nil
+	return &groupFull, nil
 }
 
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
@@ -48,7 +48,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 }
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error) {
-	groupChannel := make(chan *entities.GroupInfo, 1)
+	groupChannel := make(chan *entities.Group, 1)
 	usersChannel := make(chan []entities.GroupUser, 1)
 	errChannel := make(chan error, 2)
 
@@ -70,7 +70,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		usersChannel <- users
 	}()
 
-	var groupInfo *entities.GroupInfo
+	var groupInfo *entities.Group
 	var users []entities.GroupUser
 
 	select {
@@ -86,8 +86,8 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}
 
 	group := entities.GroupFull{
-		GroupInfo: *groupInfo,
-		Users:     users,
+		Group: *groupInfo,
+		Users: users,
 	}
 
 	group.Users = users
@@ -95,11 +95,11 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	return &group, nil
 }
 
-func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error) {
+func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	return g.groupDatabase.GetList(ctx, entity)
 }
 
-func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
+func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.Group, error) {
 	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{ID: entity.ID})
 	if err != nil {
 		return nil, err

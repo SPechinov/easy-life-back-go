@@ -82,7 +82,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.GroupInfo, error) {
+func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
 	query := `
 		SELECT
 			public.groups.id AS group_id,
@@ -108,7 +108,7 @@ func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entitie
 		return nil, err
 	}
 
-	return &entities.GroupInfo{
+	return &entities.Group{
 		ID:        group.id,
 		Name:      group.name,
 		IsPayed:   group.isPayed,
@@ -118,7 +118,7 @@ func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entitie
 	}, nil
 }
 
-func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error) {
+func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	query := `
 		SELECT
 		    public.groups.id,
@@ -142,7 +142,7 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 	}
 	defer rows.Close()
 
-	groups := make([]entities.GroupInfo, 0)
+	groups := make([]entities.Group, 0)
 
 	for rows.Next() {
 		var group dataGroup
@@ -159,7 +159,7 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 			return nil, err
 		}
 
-		groups = append(groups, entities.GroupInfo{
+		groups = append(groups, entities.Group{
 			ID:        group.id,
 			Name:      group.name,
 			IsPayed:   group.isPayed,

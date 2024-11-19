@@ -11,10 +11,10 @@ type userService interface {
 
 type groupDatabase interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (groupID string, err error)
-	GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.GroupInfo, error)
+	GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error)
-	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error)
+	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error)
 	GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
 	InviteUser(ctx context.Context, entity entities.GroupInviteUser) error

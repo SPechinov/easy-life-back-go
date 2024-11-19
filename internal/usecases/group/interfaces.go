@@ -9,8 +9,8 @@ type groupService interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (*entities.GroupFull, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	Get(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error)
-	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error)
-	GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.GroupInfo, error)
+	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error)
+	GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.Group, error)
 	GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)
 	IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error)
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)

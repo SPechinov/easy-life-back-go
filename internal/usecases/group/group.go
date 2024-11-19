@@ -62,11 +62,11 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 	return g.groupService.Get(ctx, entity)
 }
 
-func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error) {
+func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	return g.groupService.GetList(ctx, entity)
 }
 
-func (g *Group) GetInfo(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
+func (g *Group) GetInfo(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.Group, error) {
 	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
 	if isDeletedGroup {
 		return nil, client_error.ErrGroupDeleted
