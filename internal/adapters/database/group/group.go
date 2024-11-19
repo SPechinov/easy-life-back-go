@@ -82,7 +82,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
+func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
 	query := `
 		SELECT
 			public.groups.id AS group_id,

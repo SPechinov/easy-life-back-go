@@ -59,7 +59,7 @@ func (controller *restGroupController) handlerGetFullGroup(echoCtx echo.Context,
 func (controller *restGroupController) handlerGetGroupInfo(echoCtx echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCtx.Param("groupID")
 
-	groupInfo, err := controller.useCases.GetInfo(
+	groupInfo, err := controller.useCases.Get(
 		ctx,
 		userID,
 		entities.GroupGetInfo{ID: groupID},
