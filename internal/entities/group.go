@@ -9,7 +9,11 @@ type GroupInfo struct {
 	DeletedAt *string
 }
 
-type Group struct {
+func (g GroupInfo) Deleted() bool {
+	return g.DeletedAt != nil
+}
+
+type GroupFull struct {
 	GroupInfo
 	Users []GroupUser
 }
@@ -25,10 +29,6 @@ type GroupUser struct {
 	UpdatedAt  string
 	DeletedAt  *string
 	InvitedAt  string
-}
-
-func (g Group) Deleted() bool {
-	return g.DeletedAt != nil
 }
 
 type GroupsGetList struct {

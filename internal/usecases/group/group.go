@@ -19,7 +19,7 @@ func New(cfg *config.Config, groupService groupService) Group {
 	}
 }
 
-func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
+func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.GroupFull, error) {
 	return g.groupService.Add(ctx, entity)
 }
 
@@ -45,7 +45,7 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.Group, error) {
+func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.GroupFull, error) {
 	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
 	if isDeletedGroup {
 		return nil, client_error.ErrGroupDeleted

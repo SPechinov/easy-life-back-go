@@ -17,7 +17,7 @@ func New(groupDatabase groupDatabase, userService userService) *Group {
 	}
 }
 
-func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
+func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.GroupFull, error) {
 	groupID, err := g.groupDatabase.Add(ctx, entity)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 		return nil, err
 	}
 
-	group := entities.Group{
+	group := entities.GroupFull{
 		GroupInfo: *groupInfo,
 		Users:     make([]entities.GroupUser, 0),
 	}
@@ -47,7 +47,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
+func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error) {
 	groupChannel := make(chan *entities.GroupInfo, 1)
 	usersChannel := make(chan []entities.GroupUser, 1)
 	errChannel := make(chan error, 2)
@@ -85,7 +85,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 		return nil, err
 	}
 
-	group := entities.Group{
+	group := entities.GroupFull{
 		GroupInfo: *groupInfo,
 		Users:     users,
 	}
