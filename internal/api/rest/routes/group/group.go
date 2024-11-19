@@ -5,6 +5,7 @@ import (
 	"go-clean/config"
 	"go-clean/internal/api/rest"
 	"go-clean/internal/api/rest/middlewares"
+	"go-clean/internal/api/rest/utils"
 )
 
 type restGroupController struct {
@@ -23,12 +24,12 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter := router.Group("/groups")
 	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouter.GET("", controller.handlerGetGroupsList)
-	authRouter.POST("", controller.handlerAddGroup)
-	authRouter.GET("/:groupID", controller.handlerGetGroup)
-	authRouter.GET("/:groupID/info", controller.handlerGetGroupInfo)
-	authRouter.PATCH("/:groupID", controller.handlerPatchGroup)
-	authRouter.GET("/:groupID/users", controller.handlerGetGroupUsers)
-	authRouter.POST("/:groupID/invite-user", controller.handlerInviteUserInGroup)
-	authRouter.POST("/:groupID/exclude-user", controller.handlerExcludeUserFromGroup)
+	authRouter.GET("", utils.Handle(controller.handlerGetGroupsList))
+	authRouter.POST("", utils.HandleWithValidate[AddDTO](validateAddDTO, controller.handlerAddGroup))
+	authRouter.GET("/:groupID", utils.Handle(controller.handlerGetGroup))
+	authRouter.GET("/:groupID/info", utils.Handle(controller.handlerGetGroupInfo))
+	authRouter.GET("/:groupID/users", utils.Handle(controller.handlerGetGroupUsers))
+	authRouter.PATCH("/:groupID", utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
+	authRouter.POST("/:groupID/invite-user", utils.HandleWithValidate[InviteUserDTO](validateInviteUserDTO, controller.handlerInviteUserInGroup))
+	authRouter.POST("/:groupID/exclude-user", utils.HandleWithValidate[ExcludeUserDTO](validateExcludeUserDTO, controller.handlerExcludeUserFromGroup))
 }
