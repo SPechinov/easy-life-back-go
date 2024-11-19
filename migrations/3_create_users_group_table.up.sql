@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.users_groups (
     invited_at TIMESTAMP DEFAULT NOW(),
 
     CONSTRAINT fk_group FOREIGN KEY (group_id) REFERENCES public.groups(id),
-    CONSTRAINT fk_admin FOREIGN KEY (user_id) REFERENCES public.users(id),
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES public.users(id),
     CONSTRAINT unique_user_group UNIQUE (group_id, user_id)
 );
 
