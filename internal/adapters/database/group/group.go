@@ -240,26 +240,6 @@ func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersL
 	return users, nil
 }
 
-func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error) {
-	query := `
-		SELECT COUNT(*)
-		FROM public.users_groups
-		WHERE user_id = $1 AND group_id = $2 AND permission = $3
-	`
-
-	var count int
-	err := g.postgres.QueryRow(ctx, query, userID, groupID, constants.DefaultAdminPermission).Scan(&count)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return false, nil
-		}
-
-		logger.Error(ctx, err)
-		return false, err
-	}
-	return count > 0, nil
-}
-
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
 	query := `
 		-- Users groups
@@ -353,22 +333,4 @@ func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUse
 	}
 
 	return nil
-}
-
-func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
-	query := `
-		SELECT COUNT(*) FROM public.groups WHERE id = $1 AND deleted_at IS NULL
-	`
-
-	var count int
-	err := g.postgres.QueryRow(ctx, query, groupID).Scan(&count)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return true
-		}
-
-		logger.Error(ctx, err)
-		return true
-	}
-	return count == 0
 }

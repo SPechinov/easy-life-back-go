@@ -29,15 +29,12 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 		return client_error.ErrGroupDeleted
 	}
 
-	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
-	if err != nil {
-		return err
-	}
+	isAdmin := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
 	if !isAdmin {
 		return client_error.ErrUserNotAdminGroup
 	}
 
-	err = g.groupService.Patch(ctx, entity)
+	err := g.groupService.Patch(ctx, entity)
 	if err != nil {
 		return err
 	}
@@ -113,15 +110,12 @@ func (g *Group) InviteUser(ctx context.Context, adminID string, entity entities.
 		return client_error.ErrGroupDeleted
 	}
 
-	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
-	if err != nil {
-		return err
-	}
+	isAdmin := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
 	if !isAdmin {
 		return client_error.ErrUserNotAdminGroup
 	}
 
-	err = g.groupService.InviteUser(ctx, entity)
+	err := g.groupService.InviteUser(ctx, entity)
 	if err != nil {
 		return err
 	}
@@ -135,10 +129,7 @@ func (g *Group) ExcludeUser(ctx context.Context, adminID string, entity entities
 		return client_error.ErrGroupDeleted
 	}
 
-	isAdmin, err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
-	if err != nil {
-		return err
-	}
+	isAdmin := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
 	if !isAdmin {
 		return client_error.ErrUserNotAdminGroup
 	}
@@ -146,7 +137,7 @@ func (g *Group) ExcludeUser(ctx context.Context, adminID string, entity entities
 		return client_error.ErrUserAdminGroup
 	}
 
-	err = g.groupService.ExcludeUser(ctx, entity)
+	err := g.groupService.ExcludeUser(ctx, entity)
 	if err != nil {
 		return err
 	}

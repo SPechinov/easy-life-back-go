@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"go-clean/internal/constants"
 	"go-clean/internal/entities"
 )
 
@@ -103,8 +104,13 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGetInfo) (*entitie
 	return groupInfo, nil
 }
 
-func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) (bool, error) {
-	return g.groupDatabase.IsGroupAdmin(ctx, userID, groupID)
+func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) bool {
+	user, err := g.groupDatabase.GetGroupUser(ctx, userID, groupID)
+	if err != nil || user == nil {
+		return false
+	}
+
+	return user.Permission == constants.DefaultAdminPermission
 }
 
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
@@ -124,5 +130,10 @@ func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUse
 }
 
 func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
-	return g.groupDatabase.IsDeletedGroup(ctx, groupID)
+	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{ID: groupID})
+	if err != nil {
+		return true
+	}
+
+	return group.Deleted()
 }
