@@ -22,7 +22,7 @@ func GetPtrValueFromSQLNullString(data sql.NullString) *string {
 
 func GetPtrValueFromSQLNullTime(data sql.NullTime, format string) *string {
 	if data.Valid {
-		StrToPtr(data.Time.Format(format))
+		return StrToPtr(data.Time.Format(format))
 	}
 
 	return nil

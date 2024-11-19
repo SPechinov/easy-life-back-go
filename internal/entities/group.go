@@ -9,7 +9,7 @@ type Group struct {
 	DeletedAt *string
 }
 
-func (g Group) Deleted() bool {
+func (g *Group) Deleted() bool {
 	return g.DeletedAt != nil
 }
 

@@ -43,11 +43,6 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 }
 
 func (g *Group) GetFull(ctx context.Context, userID string, entity entities.GroupGet) (*entities.GroupFull, error) {
-	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
-	if isDeletedGroup {
-		return nil, client_error.ErrGroupDeleted
-	}
-
 	user, err := g.groupService.GetGroupUser(ctx, userID, entity.ID)
 	if user == nil && err == nil {
 		return nil, client_error.ErrUserNotInGroup
@@ -56,7 +51,16 @@ func (g *Group) GetFull(ctx context.Context, userID string, entity entities.Grou
 		return nil, err
 	}
 
-	return g.groupService.GetFull(ctx, entity)
+	groupFull, err := g.groupService.GetFull(ctx, entity)
+	if err != nil {
+		return nil, err
+	}
+
+	if groupFull.Deleted() {
+		return nil, client_error.ErrGroupDeleted
+	}
+
+	return groupFull, nil
 }
 
 func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
@@ -64,11 +68,6 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 }
 
 func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.Group, error) {
-	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
-	if isDeletedGroup {
-		return nil, client_error.ErrGroupDeleted
-	}
-
 	user, err := g.groupService.GetGroupUser(ctx, userID, entity.ID)
 	if user == nil && err == nil {
 		return nil, client_error.ErrUserNotInGroup
@@ -77,12 +76,16 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 		return nil, err
 	}
 
-	groupInfo, err := g.groupService.Get(ctx, entity)
+	group, err := g.groupService.Get(ctx, entity)
 	if err != nil {
 		return nil, err
 	}
 
-	return groupInfo, nil
+	if group.Deleted() {
+		return nil, client_error.ErrGroupDeleted
+	}
+
+	return group, nil
 }
 
 func (g *Group) GetUsersList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
