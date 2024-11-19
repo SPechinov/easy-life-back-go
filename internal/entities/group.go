@@ -32,7 +32,8 @@ type GroupUser struct {
 }
 
 type GroupsGetList struct {
-	UserID string
+	UserID  string
+	Deleted bool
 }
 
 type GroupGet struct {

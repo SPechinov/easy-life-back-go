@@ -132,10 +132,16 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 		LEFT JOIN public.groups
 			ON public.groups.id = public.users_groups.group_id
 
-		WHERE user_id = $1
+		WHERE 
+		    user_id = $1 
+		  AND (
+		    ($2 = TRUE AND public.groups.deleted_at IS NOT NULL)
+			OR
+		    ($2 = FALSE AND public.groups.deleted_at IS NULL)
+		  )
 	`
 
-	rows, err := g.postgres.Query(ctx, query, entity.UserID)
+	rows, err := g.postgres.Query(ctx, query, entity.UserID, entity.Deleted)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
