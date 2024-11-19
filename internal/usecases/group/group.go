@@ -45,7 +45,7 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.GroupFull, error) {
+func (g *Group) GetFull(ctx context.Context, userID string, entity entities.GroupGet) (*entities.GroupFull, error) {
 	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
 	if isDeletedGroup {
 		return nil, client_error.ErrGroupDeleted
@@ -59,7 +59,7 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 		return nil, err
 	}
 
-	return g.groupService.Get(ctx, entity)
+	return g.groupService.GetFull(ctx, entity)
 }
 
 func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {

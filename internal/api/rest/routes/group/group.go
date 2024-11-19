@@ -28,7 +28,7 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter.PATCH("/:groupID", utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
 
 	authRouter.GET("", utils.Handle(controller.handlerGetGroupsList))
-	authRouter.GET("/:groupID", utils.Handle(controller.handlerGetGroup))
+	authRouter.GET("/:groupID", utils.Handle(controller.handlerGetFullGroup))
 	authRouter.GET("/:groupID/info", utils.Handle(controller.handlerGetGroupInfo))
 	authRouter.GET("/:groupID/users", utils.Handle(controller.handlerGetGroupUsers))
 

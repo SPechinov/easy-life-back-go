@@ -41,10 +41,10 @@ func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context, ctx
 	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGetGroup(echoCtx echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupController) handlerGetFullGroup(echoCtx echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCtx.Param("groupID")
 
-	group, err := controller.useCases.Get(
+	group, err := controller.useCases.GetFull(
 		ctx,
 		userID,
 		entities.GroupGet{ID: groupID},

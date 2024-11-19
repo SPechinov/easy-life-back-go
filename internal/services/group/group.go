@@ -42,7 +42,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error) {
+func (g *Group) GetFull(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error) {
 	groupChannel := make(chan *entities.Group, 1)
 	usersChannel := make(chan []entities.GroupUser, 1)
 	errChannel := make(chan error, 2)
