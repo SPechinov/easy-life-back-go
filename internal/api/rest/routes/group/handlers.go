@@ -13,7 +13,7 @@ import (
 	"net/http"
 )
 
-func (controller *restGroupController) handlerGroupsList(c echo.Context) error {
+func (controller *restGroupController) handlerGetGroupsList(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -37,7 +37,7 @@ func (controller *restGroupController) handlerGroupsList(c echo.Context) error {
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
+func (controller *restGroupController) handlerAddGroup(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -76,7 +76,7 @@ func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
+func (controller *restGroupController) handlerGetGroup(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -108,7 +108,7 @@ func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGroupGetInfo(c echo.Context) error {
+func (controller *restGroupController) handlerGetGroupInfo(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -140,7 +140,7 @@ func (controller *restGroupController) handlerGroupGetInfo(c echo.Context) error
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(groupInfo))
 }
 
-func (controller *restGroupController) handlerGroupGetUsersList(c echo.Context) error {
+func (controller *restGroupController) handlerGetGroupUsers(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -172,7 +172,7 @@ func (controller *restGroupController) handlerGroupGetUsersList(c echo.Context) 
 	return c.JSON(http.StatusOK, rest.NewResponseSuccess(usersList))
 }
 
-func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
+func (controller *restGroupController) handlerPatchGroup(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -221,7 +221,7 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerGroupInviteUser(c echo.Context) error {
+func (controller *restGroupController) handlerInviteUserInGroup(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
@@ -270,7 +270,7 @@ func (controller *restGroupController) handlerGroupInviteUser(c echo.Context) er
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerGroupExcludeUser(c echo.Context) error {
+func (controller *restGroupController) handlerExcludeUserFromGroup(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
