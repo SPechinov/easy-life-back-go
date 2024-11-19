@@ -28,8 +28,8 @@ func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context, ctx
 	group, err := controller.useCases.Add(
 		ctx,
 		entities.GroupAdd{
-			Name:    dto.Name,
 			AdminID: userID,
+			Name:    dto.Name,
 		},
 	)
 	if err != nil {
@@ -110,8 +110,8 @@ func (controller *restGroupController) handlerInviteUserInGroup(echoCtx echo.Con
 		ctx,
 		userID,
 		entities.GroupInviteUser{
-			UserID: dto.UserID,
 			ID:     groupID,
+			UserID: dto.UserID,
 		},
 	)
 	if err != nil {
@@ -128,8 +128,8 @@ func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.
 		ctx,
 		userID,
 		entities.GroupExcludeUser{
-			UserID: dto.UserID,
 			ID:     groupID,
+			UserID: dto.UserID,
 		},
 	)
 	if err != nil {
