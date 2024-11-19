@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"go-clean/internal/api/rest"
-	"go-clean/internal/api/rest/constants"
-	"go-clean/internal/api/rest/utils/rest_error"
-	globalConstants "go-clean/internal/constants"
+	"go-clean/internal/api/rest/utils"
 	"go-clean/internal/entities"
 	"go-clean/pkg/logger"
 	"net/http"
 )
 
 func (controller *restGroupController) handlerGetGroupsList(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, userID, err := initializeRequest(echoCtx)
+	if err != nil {
+		return err
+	}
 
 	group, err := controller.useCases.GetList(
 		ctx,
@@ -29,21 +29,17 @@ func (controller *restGroupController) handlerGetGroupsList(echoCtx echo.Context
 }
 
 func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
-
-	dto := new(AddDTO)
-	err := echoCtx.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
-	ctx = logger.WithGroupName(ctx, dto.Name)
-
-	err = validateAddDTO(dto)
+	ctx, userID, err := initializeRequest(echoCtx)
 	if err != nil {
 		return err
 	}
+
+	dto, err := utils.BindAndValidate[AddDTO](echoCtx, validateAddDTO)
+	if err != nil {
+		return err
+	}
+
+	ctx = logger.WithGroupName(ctx, dto.Name)
 
 	group, err := controller.useCases.Add(
 		ctx,
@@ -62,8 +58,11 @@ func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context) err
 }
 
 func (controller *restGroupController) handlerGetGroup(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, userID, err := initializeRequest(echoCtx)
+	if err != nil {
+		return err
+	}
+
 	groupID := echoCtx.Param("groupID")
 
 	group, err := controller.useCases.Get(
@@ -79,8 +78,11 @@ func (controller *restGroupController) handlerGetGroup(echoCtx echo.Context) err
 }
 
 func (controller *restGroupController) handlerGetGroupInfo(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, userID, err := initializeRequest(echoCtx)
+	if err != nil {
+		return err
+	}
+
 	groupID := echoCtx.Param("groupID")
 
 	groupInfo, err := controller.useCases.GetInfo(
@@ -96,8 +98,14 @@ func (controller *restGroupController) handlerGetGroupInfo(echoCtx echo.Context)
 }
 
 func (controller *restGroupController) handlerGetGroupUsers(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, err := utils.GetCTXLoggerFromEchoCTX(echoCtx)
+	if err != nil {
+		return err
+	}
+	userID, err := utils.GetUserIDFromEchoCTX(echoCtx)
+	if err != nil {
+		return err
+	}
 	groupID := echoCtx.Param("groupID")
 
 	usersList, err := controller.useCases.GetUsersList(
@@ -113,21 +121,14 @@ func (controller *restGroupController) handlerGetGroupUsers(echoCtx echo.Context
 }
 
 func (controller *restGroupController) handlerPatchGroup(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	groupID := echoCtx.Param("groupID")
-	userID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
-
-	dto := new(PatchDTO)
-	err := echoCtx.Bind(dto)
+	ctx, userID, err := initializeRequest(echoCtx)
 	if err != nil {
-		return rest_error.ErrInvalidBodyData
+		return err
 	}
 
-	if dto.Name != nil {
-		ctx = logger.WithGroupName(ctx, *dto.Name)
-	}
+	groupID := echoCtx.Param("groupID")
 
-	err = validatePatchDTO(dto)
+	dto, err := utils.BindAndValidate[PatchDTO](echoCtx, validatePatchDTO)
 	if err != nil {
 		return err
 	}
@@ -149,24 +150,20 @@ func (controller *restGroupController) handlerPatchGroup(echoCtx echo.Context) e
 }
 
 func (controller *restGroupController) handlerInviteUserInGroup(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	adminID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, userID, err := initializeRequest(echoCtx)
+	if err != nil {
+		return err
+	}
 	groupID := echoCtx.Param("groupID")
 
-	dto := new(InviteUserDTO)
-	err := echoCtx.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
-	err = validateInviteDTO(dto)
+	dto, err := utils.BindAndValidate[InviteUserDTO](echoCtx, validateInviteUserDTO)
 	if err != nil {
 		return err
 	}
 
 	err = controller.useCases.InviteUser(
 		ctx,
-		adminID,
+		userID,
 		entities.GroupInviteUser{
 			UserID: dto.UserID,
 			ID:     groupID,
@@ -181,24 +178,20 @@ func (controller *restGroupController) handlerInviteUserInGroup(echoCtx echo.Con
 }
 
 func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.Context) error {
-	ctx := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
-	adminID := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
+	ctx, userID, err := initializeRequest(echoCtx)
+	if err != nil {
+		return err
+	}
 	groupID := echoCtx.Param("groupID")
 
-	dto := new(ExcludeUserDTO)
-	err := echoCtx.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
-	err = validateExcludeDTO(dto)
+	dto, err := utils.BindAndValidate[ExcludeUserDTO](echoCtx, validateExcludeUserDTO)
 	if err != nil {
 		return err
 	}
 
 	err = controller.useCases.ExcludeUser(
 		ctx,
-		adminID,
+		userID,
 		entities.GroupExcludeUser{
 			UserID: dto.UserID,
 			ID:     groupID,
@@ -210,4 +203,17 @@ func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.
 
 	logger.Info(ctx, fmt.Sprintf("User excluded: %s", dto.UserID))
 	return echoCtx.NoContent(http.StatusNoContent)
+}
+
+func initializeRequest(echoCtx echo.Context) (context.Context, string, error) {
+	ctx, err := utils.GetCTXLoggerFromEchoCTX(echoCtx)
+	if err != nil {
+		return nil, "", err
+	}
+	userID, err := utils.GetUserIDFromEchoCTX(echoCtx)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return ctx, userID, nil
 }

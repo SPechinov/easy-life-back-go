@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/labstack/echo/v4"
 	"go-clean/internal/api/rest/constants"
+	"go-clean/internal/api/rest/utils"
 	"go-clean/pkg/logger"
 )
 
@@ -19,7 +20,8 @@ func StartLogging(next echo.HandlerFunc) echo.HandlerFunc {
 		if groupID := echoCtx.Param("groupID"); groupID != "" {
 			ctx = logger.WithGroupID(ctx, groupID)
 		}
-		echoCtx.Set(constants.CTXLoggerInCTX, ctx)
+
+		utils.SetCTXLoggerInEchoCTX(echoCtx, ctx)
 
 		logger.Debug(ctx, "Start")
 		err := next(echoCtx)

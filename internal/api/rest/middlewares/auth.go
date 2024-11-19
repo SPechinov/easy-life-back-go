@@ -73,7 +73,7 @@ func AuthMiddleware(cfg *config.Config) func(next echo.HandlerFunc) echo.Handler
 			}
 
 			// Save in context
-			echoCtx.Set(constants.CTXUserIDKey, userID)
+			utils.SetUserIDInEchoCTX(echoCtx, userID)
 
 			// Logging UserID
 			if loggerCtx, ok := echoCtx.Get(restConstants.CTXLoggerInCTX).(context.Context); !ok {

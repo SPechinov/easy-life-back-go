@@ -28,14 +28,14 @@ func validatePatchDTO(dto *PatchDTO) error {
 	return checkError(err)
 }
 
-func validateInviteDTO(dto *InviteUserDTO) error {
+func validateInviteUserDTO(dto *InviteUserDTO) error {
 	err := validation.ValidateStruct(dto,
 		validation.Field(&dto.UserID, validation.Required, is.UUIDv4),
 	)
 	return checkError(err)
 }
 
-func validateExcludeDTO(dto *ExcludeUserDTO) error {
+func validateExcludeUserDTO(dto *ExcludeUserDTO) error {
 	err := validation.ValidateStruct(dto,
 		validation.Field(&dto.UserID, validation.Required, is.UUIDv4),
 	)
