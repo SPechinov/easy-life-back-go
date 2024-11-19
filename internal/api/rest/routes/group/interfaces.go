@@ -7,6 +7,7 @@ import (
 
 type useCases interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error)
+	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error)
 	Get(ctx context.Context, userID string, entity entities.GroupGet) (*entities.Group, error)
 	GetInfo(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.GroupInfo, error)
 	GetUsersList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)

@@ -32,6 +32,10 @@ func (g Group) Deleted() bool {
 	return g.DeletedAt != nil
 }
 
+type GroupsGetList struct {
+	UserID string
+}
+
 type GroupGet struct {
 	GroupID string
 }

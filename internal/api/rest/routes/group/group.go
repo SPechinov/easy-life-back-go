@@ -23,6 +23,7 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter := router.Group("/groups")
 	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
+	authRouter.GET("", controller.handlerGroupsList)
 	authRouter.POST("", controller.handlerGroupAdd)
 	authRouter.GET("/:groupID", controller.handlerGroupGet)
 	authRouter.GET("/:groupID/info", controller.handlerGroupGetInfo)

@@ -95,6 +95,10 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	return &group, nil
 }
 
+func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error) {
+	return g.groupDatabase.GetList(ctx, entity)
+}
+
 func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
 	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{GroupID: entity.GroupID})
 	if err != nil {

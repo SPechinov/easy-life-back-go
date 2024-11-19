@@ -13,6 +13,30 @@ import (
 	"net/http"
 )
 
+func (controller *restGroupController) handlerGroupsList(c echo.Context) error {
+	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+	if !ok {
+		logger.Error(ctx, "No context")
+		return rest_error.ErrSomethingHappen
+	}
+
+	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+	logger.Debug(ctx, "Start")
+
+	group, err := controller.useCases.GetList(ctx, entities.GroupsGetList{
+		UserID: userID,
+	})
+	if err != nil {
+		return err
+	}
+
+	logger.Debug(ctx, "Finish")
+	return c.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+}
+
 func (controller *restGroupController) handlerGroupAdd(c echo.Context) error {
 	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {

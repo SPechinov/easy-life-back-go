@@ -160,6 +160,60 @@ func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entitie
 	}, nil
 }
 
+func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.GroupInfo, error) {
+	query := `
+		SELECT
+		    public.groups.id,
+		    public.groups.name,
+		    public.groups.is_payed,
+		    public.groups.created_at,
+		    public.groups.updated_at,
+		    public.groups.deleted_at
+		FROM public.users_groups
+
+		LEFT JOIN public.groups
+			ON public.groups.id = public.users_groups.group_id
+
+		WHERE user_id = $1
+	`
+
+	rows, err := g.postgres.Query(ctx, query, entity.UserID)
+	if err != nil {
+		logger.Error(ctx, err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	groups := make([]entities.GroupInfo, 0)
+
+	for rows.Next() {
+		var group dataGroup
+		err = rows.Scan(
+			&group.id,
+			&group.name,
+			&group.isPayed,
+			&group.createdAt,
+			&group.updatedAt,
+			&group.deletedAt,
+		)
+		if err != nil {
+			logger.Error(ctx, err)
+			return nil, err
+		}
+
+		groups = append(groups, entities.GroupInfo{
+			ID:        group.id,
+			Name:      group.name,
+			IsPayed:   group.isPayed,
+			CreatedAt: group.createdAt.Format(time.RFC3339),
+			UpdatedAt: group.updatedAt.Format(time.RFC3339),
+			DeletedAt: helpers.GetPtrValueFromSQLNullTime(group.deletedAt, time.RFC3339),
+		})
+	}
+
+	return groups, nil
+}
+
 func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
 	query := `
 		-- Users groups
