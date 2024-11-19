@@ -24,12 +24,14 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter := router.Group("/groups")
 	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouter.GET("", utils.Handle(controller.handlerGetGroupsList))
 	authRouter.POST("", utils.HandleWithValidate[AddDTO](validateAddDTO, controller.handlerAddGroup))
+	authRouter.PATCH("/:groupID", utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
+
+	authRouter.GET("", utils.Handle(controller.handlerGetGroupsList))
 	authRouter.GET("/:groupID", utils.Handle(controller.handlerGetGroup))
 	authRouter.GET("/:groupID/info", utils.Handle(controller.handlerGetGroupInfo))
 	authRouter.GET("/:groupID/users", utils.Handle(controller.handlerGetGroupUsers))
-	authRouter.PATCH("/:groupID", utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
+
 	authRouter.POST("/:groupID/invite-user", utils.HandleWithValidate[InviteUserDTO](validateInviteUserDTO, controller.handlerInviteUserInGroup))
 	authRouter.POST("/:groupID/exclude-user", utils.HandleWithValidate[ExcludeUserDTO](validateExcludeUserDTO, controller.handlerExcludeUserFromGroup))
 }

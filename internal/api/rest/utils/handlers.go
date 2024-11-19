@@ -55,23 +55,3 @@ func HandleWithValidate[T any](validator func(*T) error, handler handlerWithVali
 		return handler(echoCtx, ctx, dto, userID)
 	}
 }
-
-func HandleWithValidateOld[T any](echoCtx echo.Context, validator func(*T) error, handler handlerWithValidate[T]) error {
-	ctx, userID, err := getLoggerCTXAndUserID(echoCtx)
-	if err != nil {
-		return err
-	}
-
-	dto := new(T)
-	err = echoCtx.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
-	err = validator(dto)
-	if err != nil {
-		return err
-	}
-
-	return handler(echoCtx, ctx, dto, userID)
-}
