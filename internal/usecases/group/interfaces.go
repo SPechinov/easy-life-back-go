@@ -6,7 +6,7 @@ import (
 )
 
 type groupService interface {
-	Add(ctx context.Context, entity entities.GroupAdd) (*entities.GroupFull, error)
+	Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	Get(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error)
 	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error)

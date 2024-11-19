@@ -19,7 +19,7 @@ func New(cfg *config.Config, groupService groupService) Group {
 	}
 }
 
-func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.GroupFull, error) {
+func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
 	return g.groupService.Add(ctx, entity)
 }
 
