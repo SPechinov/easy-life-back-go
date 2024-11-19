@@ -36,15 +36,15 @@ type GroupsGetList struct {
 }
 
 type GroupGet struct {
-	GroupID string
+	ID string
 }
 
 type GroupGetInfo struct {
-	GroupID string
+	ID string
 }
 
 type GroupGetUsersList struct {
-	GroupID string
+	ID string
 }
 
 type GroupAdd struct {
@@ -53,16 +53,16 @@ type GroupAdd struct {
 }
 
 type GroupPatch struct {
-	GroupID string
-	Name    *string
+	ID   string
+	Name *string
 }
 
 type GroupInviteUser struct {
-	GroupID string
-	UserID  string
+	ID     string
+	UserID string
 }
 
 type GroupExcludeUser struct {
-	GroupID string
-	UserID  string
+	ID     string
+	UserID string
 }

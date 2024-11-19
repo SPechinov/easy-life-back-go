@@ -24,7 +24,7 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	}
 
 	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{
-		GroupID: groupID,
+		ID: groupID,
 	})
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	errChannel := make(chan error, 2)
 
 	go func() {
-		group, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{GroupID: entity.GroupID})
+		group, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{ID: entity.ID})
 		if err != nil {
 			errChannel <- err
 			return
@@ -62,7 +62,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}()
 
 	go func() {
-		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupGetUsersList{GroupID: entity.GroupID})
+		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupGetUsersList{ID: entity.ID})
 		if err != nil {
 			errChannel <- err
 			return
@@ -100,7 +100,7 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 }
 
 func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGetInfo) (*entities.GroupInfo, error) {
-	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{GroupID: entity.GroupID})
+	groupInfo, err := g.groupDatabase.GetInfo(ctx, entities.GroupGet{ID: entity.ID})
 	if err != nil {
 		return nil, err
 	}

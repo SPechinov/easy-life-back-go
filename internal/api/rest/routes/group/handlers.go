@@ -98,9 +98,7 @@ func (controller *restGroupController) handlerGroupGet(c echo.Context) error {
 	group, err := controller.useCases.Get(
 		ctx,
 		userID,
-		entities.GroupGet{
-			GroupID: groupID,
-		},
+		entities.GroupGet{ID: groupID},
 	)
 	if err != nil {
 		return err
@@ -132,9 +130,7 @@ func (controller *restGroupController) handlerGroupGetInfo(c echo.Context) error
 	groupInfo, err := controller.useCases.GetInfo(
 		ctx,
 		userID,
-		entities.GroupGetInfo{
-			GroupID: groupID,
-		},
+		entities.GroupGetInfo{ID: groupID},
 	)
 	if err != nil {
 		return err
@@ -166,9 +162,7 @@ func (controller *restGroupController) handlerGroupGetUsersList(c echo.Context) 
 	usersList, err := controller.useCases.GetUsersList(
 		ctx,
 		userID,
-		entities.GroupGetUsersList{
-			GroupID: groupID,
-		},
+		entities.GroupGetUsersList{ID: groupID},
 	)
 	if err != nil {
 		return err
@@ -215,8 +209,8 @@ func (controller *restGroupController) handlerGroupPatch(c echo.Context) error {
 		ctx,
 		userID,
 		entities.GroupPatch{
-			GroupID: groupID,
-			Name:    dto.Name,
+			ID:   groupID,
+			Name: dto.Name,
 		},
 	)
 	if err != nil {
@@ -264,8 +258,8 @@ func (controller *restGroupController) handlerGroupInviteUser(c echo.Context) er
 		ctx,
 		adminID,
 		entities.GroupInviteUser{
-			UserID:  dto.UserID,
-			GroupID: groupID,
+			UserID: dto.UserID,
+			ID:     groupID,
 		},
 	)
 	if err != nil {
@@ -313,8 +307,8 @@ func (controller *restGroupController) handlerGroupExcludeUser(c echo.Context) e
 		ctx,
 		adminID,
 		entities.GroupExcludeUser{
-			UserID:  dto.UserID,
-			GroupID: groupID,
+			UserID: dto.UserID,
+			ID:     groupID,
 		},
 	)
 	if err != nil {

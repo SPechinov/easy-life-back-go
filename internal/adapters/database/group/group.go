@@ -73,7 +73,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 		WHERE id = $2
 	`
 
-	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.GroupID)
+	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.ID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err
@@ -95,7 +95,7 @@ func (g *Group) GetInfo(ctx context.Context, entity entities.GroupGet) (*entitie
 	`
 
 	group := new(dataGroup)
-	err := g.postgres.QueryRow(ctx, query, entity.GroupID).Scan(
+	err := g.postgres.QueryRow(ctx, query, entity.ID).Scan(
 		&group.id,
 		&group.name,
 		&group.isPayed,
@@ -195,7 +195,7 @@ func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersL
 		WHERE public.users_groups.group_id = $1
 	`
 
-	rows, err := g.postgres.Query(ctx, query, entity.GroupID)
+	rows, err := g.postgres.Query(ctx, query, entity.ID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
@@ -326,7 +326,7 @@ func (g *Group) InviteUser(ctx context.Context, entity entities.GroupInviteUser)
 			VALUES ($1, $2, 0)
 		`
 
-	_, err := g.postgres.Exec(ctx, query, entity.GroupID, entity.UserID)
+	_, err := g.postgres.Exec(ctx, query, entity.ID, entity.UserID)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
@@ -346,7 +346,7 @@ func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUse
 			DELETE FROM public.users_groups WHERE group_id = $1 AND user_id = $2 AND permission != $3
 		`
 
-	_, err := g.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)
+	_, err := g.postgres.Exec(ctx, query, entity.ID, entity.UserID, constants.DefaultAdminPermission)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err
