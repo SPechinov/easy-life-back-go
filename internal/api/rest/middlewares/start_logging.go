@@ -13,6 +13,11 @@ func StartLogging(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx = logger.WithURL(ctx, echoCtx.Request().RequestURI)
 		utils.SetCTXLoggerInEchoCTX(echoCtx, ctx)
 
+		// Group ID
+		if groupID := echoCtx.Param("groupID"); groupID != "" {
+			ctx = logger.WithGroupID(ctx, groupID)
+		}
+
 		logger.Debug(ctx, "Start")
 		err := next(echoCtx)
 		logger.Debug(ctx, "Finish")
