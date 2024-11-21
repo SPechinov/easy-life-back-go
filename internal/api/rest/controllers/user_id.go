@@ -31,16 +31,56 @@ func (c *ControllerUserID) Register(echoCTX echo.Context) error {
 	}
 
 	c.ctx = logger.WithUserID(c.ctx, c.userID)
+
+	return c.handler(echoCTX, c.ctx, c.userID)
+}
+
+func (c *ControllerUserID) Init(echoCTX echo.Context) error {
+	err := c.Controller.Init(echoCTX)
+
+	if err != nil {
+		return err
+	}
+
 	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
 	if !ok {
 		return rest_error.ErrNotAuthorized
 	}
 
-	return c.handler(echoCTX, c.ctx, userID)
+	c.userID = userID
+	return nil
 }
 
-func (c *ControllerUserID) Init(echoCTX echo.Context) error {
-	err := c.Controller.Init(echoCTX)
+type HandlerUserIDValidation[V any] func(echoCTX echo.Context, ctx context.Context, userID string, dto *V) error
+
+type ControllerUserIDValidation[V any] struct {
+	ControllerValidation[V]
+	handler HandlerUserIDValidation[V]
+	userID  string
+}
+
+func NewControllerUserIDValidation[V any](handler HandlerUserIDValidation[V], validator func(*V) error) *ControllerUserIDValidation[V] {
+	return &ControllerUserIDValidation[V]{
+		ControllerValidation: ControllerValidation[V]{
+			validator: validator,
+		},
+		handler: handler,
+	}
+}
+
+func (c *ControllerUserIDValidation[V]) Register(echoCTX echo.Context) error {
+	err := c.Init(echoCTX)
+	if err != nil {
+		return err
+	}
+
+	c.ctx = logger.WithUserID(c.ctx, c.userID)
+
+	return c.handler(echoCTX, c.ctx, c.userID, c.dto)
+}
+
+func (c *ControllerUserIDValidation[V]) Init(echoCTX echo.Context) error {
+	err := c.ControllerValidation.Init(echoCTX)
 
 	if err != nil {
 		return err
