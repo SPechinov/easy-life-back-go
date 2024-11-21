@@ -14,6 +14,7 @@ type HandlerUserID func(echoCTX echo.Context, ctx context.Context, userID string
 type ControllerUserID struct {
 	Controller
 	handler HandlerUserID
+	userID  string
 }
 
 func NewControllerWithUserID(handler HandlerUserID) *ControllerUserID {
@@ -34,4 +35,19 @@ func (c *ControllerUserID) Register(echoCTX echo.Context) error {
 	}
 
 	return c.handler(echoCTX, c.ctx, userID)
+}
+
+func (c *ControllerUserID) Init(echoCTX echo.Context) error {
+	err := c.Controller.Init(echoCTX)
+	if err != nil {
+		return err
+	}
+
+	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
+	if !ok {
+		return rest_error.ErrNotAuthorized
+	}
+
+	c.userID = userID
+	return nil
 }
