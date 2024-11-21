@@ -5,7 +5,6 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-clean/internal/api/rest/constants"
 	"go-clean/internal/api/rest/utils/rest_error"
-	globalConstants "go-clean/internal/constants"
 	"go-clean/pkg/logger"
 )
 
@@ -21,17 +20,4 @@ func GetCTXLoggerFromEchoCTX(echoCtx echo.Context) (context.Context, error) {
 	}
 
 	return ctx, nil
-}
-
-func GetUserIDFromEchoCTX(echoCtx echo.Context) (string, error) {
-	userID, ok := echoCtx.Get(globalConstants.CTXUserIDKey).(string)
-	if !ok {
-		return "", rest_error.ErrNotAuthorized
-	}
-
-	return userID, nil
-}
-
-func SetUserIDInEchoCTX(echoCtx echo.Context, userID string) {
-	echoCtx.Set(globalConstants.CTXUserIDKey, userID)
 }

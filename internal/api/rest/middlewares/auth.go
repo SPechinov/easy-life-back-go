@@ -70,7 +70,7 @@ func AuthMiddleware(cfg *config.Config) func(next echo.HandlerFunc) echo.Handler
 			}
 
 			// Save in context
-			utils.SetUserIDInEchoCTX(echoCtx, userID)
+			echoCtx.Set(constants.CTXUserIDKey, userID)
 
 			return next(echoCtx)
 		}
