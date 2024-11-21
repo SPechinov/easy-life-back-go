@@ -15,3 +15,7 @@ type InviteUserDTO struct {
 type ExcludeUserDTO struct {
 	UserID string `json:"userId" form:"userId"`
 }
+
+type DeleteDTO struct {
+	Code string `json:"code" form:"code"`
+}

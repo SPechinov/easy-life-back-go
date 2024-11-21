@@ -14,6 +14,7 @@ type groupDatabase interface {
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
 	InviteUser(ctx context.Context, entity entities.GroupInviteUser) error
 	ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error
+	Delete(ctx context.Context, entity entities.GroupDelete) error
 }
 
 type userService interface {

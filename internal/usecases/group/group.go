@@ -3,19 +3,25 @@ package group
 import (
 	"context"
 	"go-clean/config"
+	"go-clean/internal/constants"
+	"go-clean/internal/constants/validation_rules"
 	"go-clean/internal/entities"
 	"go-clean/pkg/client_error"
+	"go-clean/pkg/helpers"
+	"go-clean/pkg/logger"
 )
 
 type Group struct {
 	cfg          *config.Config
 	groupService groupService
+	groupStore   groupStore
 }
 
-func New(cfg *config.Config, groupService groupService) Group {
+func New(cfg *config.Config, groupService groupService, groupStore groupStore) Group {
 	return Group{
 		cfg:          cfg,
 		groupService: groupService,
+		groupStore:   groupStore,
 	}
 }
 
@@ -141,6 +147,66 @@ func (g *Group) ExcludeUser(ctx context.Context, adminID string, entity entities
 	}
 
 	err := g.groupService.ExcludeUser(ctx, entity)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
+	if g.groupService.IsDeletedGroup(ctx, groupID) {
+		return client_error.ErrGroupDeleted
+	}
+	if !g.groupService.IsGroupAdmin(ctx, adminID, groupID) {
+		return client_error.ErrUserNotAdminGroup
+	}
+
+	// Set code to store
+	code, err := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
+	if err != nil {
+		logger.Debug(ctx, err)
+		return err
+	}
+
+	ctx = logger.WithConfirmationCode(ctx, code)
+	logger.Debug(ctx, "Code sent")
+
+	err = g.groupStore.SetGroupDeleteCode(ctx, groupID, code)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string) error {
+	if g.groupService.IsDeletedGroup(ctx, groupID) {
+		return client_error.ErrGroupDeleted
+	}
+	if !g.groupService.IsGroupAdmin(ctx, adminID, groupID) {
+		return client_error.ErrUserNotAdminGroup
+	}
+
+	storeCode, attempt, err := g.groupStore.GetGroupDeleteCode(ctx, groupID)
+	if err != nil {
+		return err
+	}
+
+	if storeCode != code {
+		if attempt+1 >= constants.MaxCodeCompareAttempt {
+			logger.Debug(ctx, "Max code attempt")
+			_ = g.groupStore.DeleteGroupDeleteCode(ctx, groupID)
+			return client_error.ErrCodeMaxAttempts
+		}
+
+		logger.Debug(ctx, "Codes not equal")
+		_ = g.groupStore.UpdateGroupDeleteCode(ctx, groupID, attempt+1)
+		return client_error.ErrCodesIsNotEqual
+	}
+
+	_ = g.groupStore.DeleteGroupDeleteCode(ctx, groupID)
+	err = g.groupService.Delete(ctx, entities.GroupDelete{ID: groupID})
 	if err != nil {
 		return err
 	}

@@ -139,3 +139,25 @@ func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.
 	logger.Info(ctx, fmt.Sprintf("User excluded: %s", dto.UserID))
 	return echoCtx.NoContent(http.StatusNoContent)
 }
+
+func (controller *restGroupController) handlerDelete(echoCtx echo.Context, ctx context.Context, userID string) error {
+	groupID := echoCtx.Param("groupID")
+
+	err := controller.useCases.Delete(ctx, groupID, userID)
+	if err != nil {
+		return err
+	}
+
+	return echoCtx.NoContent(http.StatusNoContent)
+}
+
+func (controller *restGroupController) handlerDeleteConfirm(echoCtx echo.Context, ctx context.Context, dto *DeleteDTO, userID string) error {
+	groupID := echoCtx.Param("groupID")
+
+	err := controller.useCases.DeleteConfirm(ctx, groupID, userID, dto.Code)
+	if err != nil {
+		return err
+	}
+
+	return echoCtx.NoContent(http.StatusNoContent)
+}

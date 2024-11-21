@@ -5,6 +5,13 @@ import (
 	"go-clean/internal/entities"
 )
 
+type groupStore interface {
+	SetGroupDeleteCode(ctx context.Context, groupID, code string) error
+	GetGroupDeleteCode(ctx context.Context, groupID string) (string, int, error)
+	UpdateGroupDeleteCode(ctx context.Context, groupID string, attempts int) error
+	DeleteGroupDeleteCode(ctx context.Context, groupID string) error
+}
+
 type groupService interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
@@ -17,4 +24,5 @@ type groupService interface {
 	ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error
 	IsDeletedGroup(ctx context.Context, groupID string) bool
 	IsGroupAdmin(ctx context.Context, userID, groupID string) bool
+	Delete(ctx context.Context, entity entities.GroupDelete) error
 }

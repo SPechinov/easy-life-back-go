@@ -67,3 +67,7 @@ type GroupExcludeUser struct {
 	ID     string
 	UserID string
 }
+
+type GroupDelete struct {
+	ID string
+}

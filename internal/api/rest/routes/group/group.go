@@ -26,6 +26,8 @@ func (controller *restGroupController) Register(router *echo.Group) {
 
 	authRouter.POST("", utils.HandleWithValidate[AddDTO](validateAddDTO, controller.handlerAddGroup))
 	authRouter.PATCH("/:groupID", utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
+	authRouter.DELETE("/:groupID/delete", utils.Handle(controller.handlerDelete))
+	authRouter.DELETE("/:groupID/delete-confirm", utils.HandleWithValidate[DeleteDTO](validateDeleteDTO, controller.handlerDeleteConfirm))
 
 	authRouter.GET("", utils.Handle(controller.handlerGetGroupsList))
 	authRouter.GET("/:groupID", utils.Handle(controller.handlerGetFullGroup))

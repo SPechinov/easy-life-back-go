@@ -340,3 +340,7 @@ func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUse
 
 	return nil
 }
+
+func (g *Group) Delete(ctx context.Context, entity entities.GroupDelete) error {
+	return nil
+}

@@ -9,4 +9,5 @@ const (
 	LenMinPassword      = 8
 	LenMaxPassword      = 100
 	LenRegistrationCode = 6
+	LenDeleteGroupCode  = 6
 )

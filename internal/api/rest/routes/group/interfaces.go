@@ -14,4 +14,6 @@ type useCases interface {
 	GetUsersList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error)
 	InviteUser(ctx context.Context, adminID string, entity entities.GroupInviteUser) error
 	ExcludeUser(ctx context.Context, adminID string, entity entities.GroupExcludeUser) error
+	Delete(ctx context.Context, adminID, groupID string) error
+	DeleteConfirm(ctx context.Context, adminID, groupID, code string) error
 }
