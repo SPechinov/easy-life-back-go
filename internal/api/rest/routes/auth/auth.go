@@ -60,9 +60,9 @@ func (controller *restAuthController) Register(router *echo.Group) {
 	authRouterWithAuth.Use(middlewares.AuthMiddleware(controller.cfg))
 
 	authRouterWithAuth.POST(
-		urlLogout, controllers.NewControllerWithUserID(controller.handlerLogout).Register,
+		urlLogout, controllers.NewControllerUserID(controller.handlerLogout).Register,
 	)
 	authRouterWithAuth.POST(
-		urlLogoutAll, controllers.NewControllerWithUserID(controller.handlerLogoutAll).Register,
+		urlLogoutAll, controllers.NewControllerUserID(controller.handlerLogoutAll).Register,
 	)
 }

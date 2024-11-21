@@ -18,7 +18,7 @@ type ControllerUserID struct {
 	userID  string
 }
 
-func NewControllerWithUserID(handler HandlerUserID) *ControllerUserID {
+func NewControllerUserID(handler HandlerUserID) *ControllerUserID {
 	return &ControllerUserID{
 		handler: handler,
 	}

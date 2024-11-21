@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func (controller *restGroupController) handlerGetGroupsList(echoCtx echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupController) handlerGetGroupsList(echoCTX echo.Context, ctx context.Context, userID string) error {
 	group, err := controller.useCases.GetList(
 		ctx,
 		entities.GroupsGetList{UserID: userID},
@@ -19,10 +19,10 @@ func (controller *restGroupController) handlerGetGroupsList(echoCtx echo.Context
 		return err
 	}
 
-	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context, ctx context.Context, dto *AddDTO, userID string) error {
+func (controller *restGroupController) handlerAddGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
 	ctx = logger.WithGroupName(ctx, dto.Name)
 
 	group, err := controller.useCases.Add(
@@ -38,11 +38,11 @@ func (controller *restGroupController) handlerAddGroup(echoCtx echo.Context, ctx
 
 	ctx = logger.WithGroupID(ctx, group.ID)
 	logger.Info(ctx, "Group created")
-	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGetFullGroup(echoCtx echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerGetFullGroup(echoCTX echo.Context, ctx context.Context, userID string) error {
+	groupID := echoCTX.Param("groupID")
 
 	group, err := controller.useCases.GetFull(
 		ctx,
@@ -53,11 +53,11 @@ func (controller *restGroupController) handlerGetFullGroup(echoCtx echo.Context,
 		return err
 	}
 
-	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(group))
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGetGroupInfo(echoCtx echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerGetGroupInfo(echoCTX echo.Context, ctx context.Context, userID string) error {
+	groupID := echoCTX.Param("groupID")
 
 	groupInfo, err := controller.useCases.Get(
 		ctx,
@@ -68,11 +68,11 @@ func (controller *restGroupController) handlerGetGroupInfo(echoCtx echo.Context,
 		return err
 	}
 
-	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(groupInfo))
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(groupInfo))
 }
 
-func (controller *restGroupController) handlerGetGroupUsers(echoCtx echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerGetGroupUsers(echoCTX echo.Context, ctx context.Context, userID string) error {
+	groupID := echoCTX.Param("groupID")
 
 	usersList, err := controller.useCases.GetUsersList(
 		ctx,
@@ -83,11 +83,11 @@ func (controller *restGroupController) handlerGetGroupUsers(echoCtx echo.Context
 		return err
 	}
 
-	return echoCtx.JSON(http.StatusOK, rest.NewResponseSuccess(usersList))
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(usersList))
 }
 
-func (controller *restGroupController) handlerPatchGroup(echoCtx echo.Context, ctx context.Context, dto *PatchDTO, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
+	groupID := echoCTX.Param("groupID")
 	err := controller.useCases.Patch(
 		ctx,
 		userID,
@@ -101,11 +101,11 @@ func (controller *restGroupController) handlerPatchGroup(echoCtx echo.Context, c
 	}
 
 	logger.Info(ctx, "Group updated")
-	return echoCtx.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerInviteUserInGroup(echoCtx echo.Context, ctx context.Context, dto *InviteUserDTO, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerInviteUserInGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *InviteUserDTO) error {
+	groupID := echoCTX.Param("groupID")
 	err := controller.useCases.InviteUser(
 		ctx,
 		userID,
@@ -119,11 +119,11 @@ func (controller *restGroupController) handlerInviteUserInGroup(echoCtx echo.Con
 	}
 
 	logger.Info(ctx, fmt.Sprintf("User invited: %s", dto.UserID))
-	return echoCtx.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.Context, ctx context.Context, dto *ExcludeUserDTO, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerExcludeUserFromGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *ExcludeUserDTO) error {
+	groupID := echoCTX.Param("groupID")
 	err := controller.useCases.ExcludeUser(
 		ctx,
 		userID,
@@ -137,27 +137,27 @@ func (controller *restGroupController) handlerExcludeUserFromGroup(echoCtx echo.
 	}
 
 	logger.Info(ctx, fmt.Sprintf("User excluded: %s", dto.UserID))
-	return echoCtx.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerDelete(echoCtx echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx context.Context, userID string) error {
+	groupID := echoCTX.Param("groupID")
 
 	err := controller.useCases.Delete(ctx, groupID, userID)
 	if err != nil {
 		return err
 	}
 
-	return echoCtx.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerDeleteConfirm(echoCtx echo.Context, ctx context.Context, dto *DeleteDTO, userID string) error {
-	groupID := echoCtx.Param("groupID")
+func (controller *restGroupController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteDTO) error {
+	groupID := echoCTX.Param("groupID")
 
 	err := controller.useCases.DeleteConfirm(ctx, groupID, userID, dto.Code)
 	if err != nil {
 		return err
 	}
 
-	return echoCtx.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }

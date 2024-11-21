@@ -4,8 +4,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-clean/config"
 	"go-clean/internal/api/rest"
+	"go-clean/internal/api/rest/controllers"
 	"go-clean/internal/api/rest/middlewares"
-	"go-clean/internal/api/rest/utils"
 )
 
 const (
@@ -37,16 +37,46 @@ func (controller *restGroupController) Register(router *echo.Group) {
 	authRouter := router.Group("/groups")
 	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouter.POST(urlGroupAdd, utils.HandleWithValidate[AddDTO](validateAddDTO, controller.handlerAddGroup))
-	authRouter.PATCH(urlGroupPatch, utils.HandleWithValidate[PatchDTO](validatePatchDTO, controller.handlerPatchGroup))
-	authRouter.DELETE(urlGroupDelete, utils.Handle(controller.handlerDelete))
-	authRouter.DELETE(urlGroupDeleteConfirm, utils.HandleWithValidate[DeleteDTO](validateDeleteDTO, controller.handlerDeleteConfirm))
+	authRouter.POST(
+		urlGroupAdd,
+		controllers.NewControllerUserIDValidation(controller.handlerAddGroup, validateAddDTO).Register,
+	)
+	authRouter.PATCH(
+		urlGroupPatch,
+		controllers.NewControllerUserIDValidation(controller.handlerPatchGroup, validatePatchDTO).Register,
+	)
+	authRouter.DELETE(
+		urlGroupDelete,
+		controllers.NewControllerUserID(controller.handlerDelete).Register,
+	)
+	authRouter.DELETE(
+		urlGroupDeleteConfirm,
+		controllers.NewControllerUserIDValidation(controller.handlerDeleteConfirm, validateDeleteDTO).Register,
+	)
 
-	authRouter.GET(urlGroupsList, utils.Handle(controller.handlerGetGroupsList))
-	authRouter.GET(urlGroup, utils.Handle(controller.handlerGetFullGroup))
-	authRouter.GET(urlGroupInfo, utils.Handle(controller.handlerGetGroupInfo))
-	authRouter.GET(urlGroupUsers, utils.Handle(controller.handlerGetGroupUsers))
+	authRouter.GET(
+		urlGroupsList,
+		controllers.NewControllerUserID(controller.handlerGetGroupsList).Register,
+	)
+	authRouter.GET(
+		urlGroup,
+		controllers.NewControllerUserID(controller.handlerGetFullGroup).Register,
+	)
+	authRouter.GET(
+		urlGroupInfo,
+		controllers.NewControllerUserID(controller.handlerGetGroupInfo).Register,
+	)
+	authRouter.GET(
+		urlGroupUsers,
+		controllers.NewControllerUserID(controller.handlerGetGroupUsers).Register,
+	)
 
-	authRouter.POST(urlGroupInviteUser, utils.HandleWithValidate[InviteUserDTO](validateInviteUserDTO, controller.handlerInviteUserInGroup))
-	authRouter.POST(urlGroupExcludeUser, utils.HandleWithValidate[ExcludeUserDTO](validateExcludeUserDTO, controller.handlerExcludeUserFromGroup))
+	authRouter.POST(
+		urlGroupInviteUser,
+		controllers.NewControllerUserIDValidation(controller.handlerInviteUserInGroup, validateInviteUserDTO).Register,
+	)
+	authRouter.POST(
+		urlGroupExcludeUser,
+		controllers.NewControllerUserIDValidation(controller.handlerExcludeUserFromGroup, validateExcludeUserDTO).Register,
+	)
 }
