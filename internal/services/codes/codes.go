@@ -16,10 +16,10 @@ const (
 )
 
 type Codes struct {
-	redis redis.Redis
+	redis *redis.Redis
 }
 
-func New(redis redis.Redis) *Codes {
+func New(redis *redis.Redis) *Codes {
 	return &Codes{redis: redis}
 }
 
@@ -33,30 +33,30 @@ func (c *Codes) SetCode(ctx context.Context, key, code string, attempts int, ttl
 	return nil
 }
 
-func (c *Codes) CompareCode(ctx context.Context, key, code string) (bool, error) {
-	storeCode, attempts, err := c.getCode(ctx, key)
+func (c *Codes) CompareCodes(ctx context.Context, key, code string) error {
+	storeCode, attempts, err := c.GetCode(ctx, key)
 	if err != nil {
-		return false, err
+		return err
 	}
 
 	if storeCode != code {
 		if attempts+1 >= constants.MaxCodeCompareAttempt {
 			logger.Debug(ctx, "Max code attempt")
 			_ = c.DeleteCode(ctx, key)
-			return false, client_error.ErrCodeMaxAttempts
+			return client_error.ErrCodeMaxAttempts
 		}
 
 		logger.Debug(ctx, "Codes not equal")
-		_ = c.UpdateCode(ctx, key, attempts+1)
-		return false, client_error.ErrCodesIsNotEqual
+		_ = c.IncrementCodeAttempts(ctx, key, attempts+1)
+		return client_error.ErrCodesIsNotEqual
 	}
 
 	_ = c.DeleteCode(ctx, key)
 
-	return true, nil
+	return nil
 }
 
-func (c *Codes) getCode(ctx context.Context, key string) (code string, attempts int, err error) {
+func (c *Codes) GetCode(ctx context.Context, key string) (code string, attempts int, err error) {
 	redisValue, err := c.redis.Get(key)
 	if err != nil {
 		if errors.Is(err, redis.NotFoundError) {
@@ -76,8 +76,8 @@ func (c *Codes) getCode(ctx context.Context, key string) (code string, attempts 
 	return code, attempts, nil
 }
 
-func (c *Codes) UpdateCode(ctx context.Context, key string, attempts int) error {
-	redisValue, _, err := c.redis.GetCode(key)
+func (c *Codes) IncrementCodeAttempts(ctx context.Context, key string, attempts int) error {
+	redisValue, _, err := c.GetCode(ctx, key)
 	if err != nil {
 		if errors.Is(err, redis.NotFoundError) {
 			return client_error.ErrCodeIsNotInRedis
@@ -91,7 +91,7 @@ func (c *Codes) UpdateCode(ctx context.Context, key string, attempts int) error 
 		return err
 	}
 
-	err = c.redis.SetCode(key, redisValue, attempts, ttl)
+	err = c.SetCode(ctx, key, redisValue, attempts, ttl)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err

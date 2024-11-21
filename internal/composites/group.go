@@ -5,8 +5,8 @@ import (
 	"go-clean/config"
 	groupDatabase "go-clean/internal/adapters/database/group"
 	userDatabase "go-clean/internal/adapters/database/user"
-	groupStore "go-clean/internal/adapters/store/group"
 	groupRestHandler "go-clean/internal/api/rest/routes/group"
+	"go-clean/internal/services/codes"
 	groupService "go-clean/internal/services/group"
 	userService "go-clean/internal/services/user"
 	groupUseCases "go-clean/internal/usecases/group"
@@ -20,8 +20,8 @@ func NewGroup(cfg *config.Config, router *echo.Group, redis *redis.Redis, postgr
 
 	gdb := groupDatabase.New(postgres)
 	gs := groupService.New(gdb, us)
-	gStore := groupStore.New(redis)
-	guc := groupUseCases.New(cfg, gs, gStore)
+	c := codes.New(redis)
+	guc := groupUseCases.New(cfg, gs, c)
 
 	groupRestHandler.New(cfg, &guc).Register(router)
 }

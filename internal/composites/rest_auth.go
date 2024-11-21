@@ -6,6 +6,7 @@ import (
 	userDatabase "go-clean/internal/adapters/database/user"
 	restAuthStore "go-clean/internal/adapters/store/rest_auth"
 	authRestHandler "go-clean/internal/api/rest/routes/auth"
+	"go-clean/internal/services/codes"
 	userService "go-clean/internal/services/user"
 	restAuthUseCases "go-clean/internal/usecases/rest_auth"
 	"go-clean/pkg/postgres"
@@ -16,6 +17,7 @@ func NewRestAuth(cfg *config.Config, router *echo.Group, redis *redis.Redis, pos
 	udb := userDatabase.New(postgres)
 	srvc := userService.New(udb)
 	st := restAuthStore.New(redis)
-	uc := restAuthUseCases.New(cfg, &st, srvc)
+	c := codes.New(redis)
+	uc := restAuthUseCases.New(cfg, &st, srvc, c)
 	authRestHandler.New(cfg, uc).Register(router)
 }

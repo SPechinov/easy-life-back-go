@@ -3,13 +3,14 @@ package group
 import (
 	"context"
 	"go-clean/internal/entities"
+	"time"
 )
 
-type groupStore interface {
-	SetGroupDeleteCode(ctx context.Context, groupID, code string) error
-	GetGroupDeleteCode(ctx context.Context, groupID string) (string, int, error)
-	UpdateGroupDeleteCode(ctx context.Context, groupID string, attempts int) error
-	DeleteGroupDeleteCode(ctx context.Context, groupID string) error
+type codes interface {
+	SetCode(ctx context.Context, key, code string, attempts int, ttl time.Duration) error
+	GetCode(ctx context.Context, key string) (string, int, error)
+	CompareCodes(ctx context.Context, key, code string) error
+	DeleteCode(ctx context.Context, key string) error
 }
 
 type groupService interface {

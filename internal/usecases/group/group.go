@@ -3,25 +3,29 @@ package group
 import (
 	"context"
 	"go-clean/config"
-	"go-clean/internal/constants"
 	"go-clean/internal/constants/validation_rules"
 	"go-clean/internal/entities"
 	"go-clean/pkg/client_error"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
+	"time"
 )
+
+func getKeyDeleteGroup(groupID string) string {
+	return "group:delete:" + groupID
+}
 
 type Group struct {
 	cfg          *config.Config
 	groupService groupService
-	groupStore   groupStore
+	codes        codes
 }
 
-func New(cfg *config.Config, groupService groupService, groupStore groupStore) Group {
+func New(cfg *config.Config, groupService groupService, codes codes) Group {
 	return Group{
 		cfg:          cfg,
 		groupService: groupService,
-		groupStore:   groupStore,
+		codes:        codes,
 	}
 }
 
@@ -167,7 +171,7 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
-	err := g.groupStore.SetGroupDeleteCode(ctx, groupID, code)
+	err := g.codes.SetCode(ctx, getKeyDeleteGroup(groupID), code, 0, time.Minute*10)
 	if err != nil {
 		return err
 	}
@@ -183,25 +187,7 @@ func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string
 		return client_error.ErrUserNotAdminGroup
 	}
 
-	storeCode, attempt, err := g.groupStore.GetGroupDeleteCode(ctx, groupID)
-	if err != nil {
-		return err
-	}
-
-	if storeCode != code {
-		if attempt+1 >= constants.MaxCodeCompareAttempt {
-			logger.Debug(ctx, "Max code attempt")
-			_ = g.groupStore.DeleteGroupDeleteCode(ctx, groupID)
-			return client_error.ErrCodeMaxAttempts
-		}
-
-		logger.Debug(ctx, "Codes not equal")
-		_ = g.groupStore.UpdateGroupDeleteCode(ctx, groupID, attempt+1)
-		return client_error.ErrCodesIsNotEqual
-	}
-
-	_ = g.groupStore.DeleteGroupDeleteCode(ctx, groupID)
-	err = g.groupService.Delete(ctx, entities.GroupDelete{ID: groupID})
+	err := g.codes.CompareCodes(ctx, getKeyDeleteGroup(groupID), code)
 	if err != nil {
 		return err
 	}

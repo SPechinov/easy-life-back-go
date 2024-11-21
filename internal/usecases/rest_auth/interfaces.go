@@ -3,19 +3,17 @@ package rest_auth
 import (
 	"context"
 	"go-clean/internal/entities"
+	"time"
 )
 
+type codes interface {
+	SetCode(ctx context.Context, key, code string, attempts int, ttl time.Duration) error
+	GetCode(ctx context.Context, key string) (string, int, error)
+	CompareCodes(ctx context.Context, key, code string) error
+	DeleteCode(ctx context.Context, key string) error
+}
+
 type store interface {
-	SetRegistrationCode(ctx context.Context, key, code string) error
-	GetRegistrationCode(ctx context.Context, key string) (string, int, error)
-	UpdateRegistrationCode(ctx context.Context, key string, attempts int) error
-	DeleteRegistrationCode(ctx context.Context, key string) error
-
-	SetForgotPasswordCode(ctx context.Context, key, code string) error
-	GetForgotPasswordCode(ctx context.Context, key string) (string, int, error)
-	UpdateForgotPasswordCode(ctx context.Context, key string, attempts int) error
-	DeleteForgotPasswordCode(ctx context.Context, key string) error
-
 	SetSession(ctx context.Context, userID, sessionID, refreshJWT string) error
 	GetSession(ctx context.Context, userID, sessionID string) (string, error)
 	DeleteSession(ctx context.Context, userID, sessionID string)

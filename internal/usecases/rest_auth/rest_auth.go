@@ -6,22 +6,31 @@ import (
 	"github.com/google/uuid"
 	"go-clean/config"
 	"go-clean/internal/api/rest/utils/rest_error"
-	"go-clean/internal/constants"
 	"go-clean/internal/constants/validation_rules"
 	"go-clean/internal/entities"
 	"go-clean/pkg/client_error"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
+	"time"
 )
+
+func getKeyUserRegistrationCode(key string) string {
+	return "http:rest-auth:reg-code:" + key
+}
+
+func getKeyUserForgotPasswordCode(key string) string {
+	return "http:rest-auth:forgot-password-code:" + key
+}
 
 type RestAuth struct {
 	store   store
+	codes   codes
 	service service
 	cfg     *config.Config
 }
 
-func New(cfg *config.Config, store store, service service) RestAuth {
-	return RestAuth{cfg: cfg, store: store, service: service}
+func New(cfg *config.Config, store store, service service, codes codes) RestAuth {
+	return RestAuth{cfg: cfg, store: store, service: service, codes: codes}
 }
 
 func generateSessionID() string {
@@ -80,32 +89,26 @@ func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) erro
 
 	logger.Debug(ctx, "Code sent")
 
-	err = ra.store.SetRegistrationCode(ctx, data.AuthWay.GetAuthValue(), code)
-	return err
+	err = ra.codes.SetCode(
+		ctx,
+		getKeyUserRegistrationCode(data.AuthWay.GetAuthValue()),
+		code,
+		0,
+		time.Minute*10,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAddConfirm) error {
 	authWayValue := data.AuthWay.GetAuthValue()
 
-	// Get code from store and compare
-	storeCode, attempt, err := ra.store.GetRegistrationCode(ctx, authWayValue)
+	err := ra.codes.CompareCodes(ctx, getKeyUserRegistrationCode(authWayValue), data.Code)
 	if err != nil {
 		return err
 	}
-
-	if storeCode != data.Code {
-		if attempt+1 >= constants.MaxCodeCompareAttempt {
-			logger.Debug(ctx, "Max code attempt")
-			_ = ra.store.DeleteRegistrationCode(ctx, authWayValue)
-			return client_error.ErrCodeMaxAttempts
-		}
-
-		logger.Debug(ctx, "Codes not equal")
-		_ = ra.store.UpdateRegistrationCode(ctx, authWayValue, attempt+1)
-		return client_error.ErrCodesIsNotEqual
-	}
-
-	_ = ra.store.DeleteRegistrationCode(ctx, authWayValue)
 
 	// Check has user or not
 	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
@@ -146,31 +149,26 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
-	err = ra.store.SetForgotPasswordCode(ctx, data.AuthWay.GetAuthValue(), code)
+	err = ra.codes.SetCode(
+		ctx,
+		getKeyUserForgotPasswordCode(data.AuthWay.GetAuthValue()),
+		code,
+		0,
+		time.Minute*10,
+	)
+	if err != nil {
+		return err
+	}
 	return err
 }
 
 func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
 	authWayValue := data.AuthWay.GetAuthValue()
-	// Get code from store and compare
-	storeCode, attempt, err := ra.store.GetForgotPasswordCode(ctx, authWayValue)
+
+	err := ra.codes.CompareCodes(ctx, getKeyUserForgotPasswordCode(authWayValue), data.Code)
 	if err != nil {
 		return err
 	}
-
-	if storeCode != data.Code {
-		if attempt+1 >= constants.MaxCodeCompareAttempt {
-			logger.Debug(ctx, "Max code attempt")
-			_ = ra.store.DeleteForgotPasswordCode(ctx, authWayValue)
-			return client_error.ErrCodeMaxAttempts
-		}
-
-		logger.Debug(ctx, "Codes not equal")
-		_ = ra.store.UpdateForgotPasswordCode(ctx, authWayValue, attempt+1)
-		return client_error.ErrCodesIsNotEqual
-	}
-
-	_ = ra.store.DeleteForgotPasswordCode(ctx, authWayValue)
 
 	// Check has user or not
 	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
