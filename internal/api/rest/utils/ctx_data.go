@@ -16,7 +16,7 @@ func SetCTXLoggerInEchoCTX(echoCtx echo.Context, ctx context.Context) {
 func GetCTXLoggerFromEchoCTX(echoCtx echo.Context) (context.Context, error) {
 	ctx, ok := echoCtx.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
-		logger.Error(ctx, "No context")
+		logger.Error(ctx, "No echo context")
 		return nil, rest_error.ErrSomethingHappen
 	}
 

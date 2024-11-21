@@ -70,8 +70,8 @@ func main() {
 	restServer.Logger.SetOutput(io.Discard)
 	router := restServer.Group("/api")
 
-	router.Use(middlewares.RequestIDMiddleware)
 	router.Use(middlewares.StartLogging)
+	router.Use(middlewares.RequestIDMiddleware)
 	router.Use(middlewares.ResponseMiddleware)
 
 	composites.NewRestAuth(cfg, router, store, db)

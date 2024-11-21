@@ -5,6 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-clean/internal/api/rest/utils/rest_error"
 	globalConstants "go-clean/internal/constants"
+	"go-clean/pkg/logger"
 )
 
 // Controller get ctx and UserID from echo context and
@@ -24,11 +25,12 @@ func NewControllerWithUserID(handler HandlerUserID) *ControllerUserID {
 }
 
 func (c *ControllerUserID) Register(echoCTX echo.Context) error {
-	err := c.Controller.Init(echoCTX)
+	err := c.Init(echoCTX)
 	if err != nil {
 		return err
 	}
 
+	c.ctx = logger.WithUserID(c.ctx, c.userID)
 	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
 	if !ok {
 		return rest_error.ErrNotAuthorized
@@ -39,6 +41,7 @@ func (c *ControllerUserID) Register(echoCTX echo.Context) error {
 
 func (c *ControllerUserID) Init(echoCTX echo.Context) error {
 	err := c.Controller.Init(echoCTX)
+
 	if err != nil {
 		return err
 	}
