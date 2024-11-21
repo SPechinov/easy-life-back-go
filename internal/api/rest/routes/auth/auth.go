@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go-clean/config"
 	"go-clean/internal/api/rest"
+	"go-clean/internal/api/rest/controllers"
 	"go-clean/internal/api/rest/middlewares"
 )
 
@@ -30,16 +31,38 @@ func New(cfg *config.Config, useCases useCases) rest.Handler {
 func (controller *restAuthController) Register(router *echo.Group) {
 	authRouter := router.Group("/auth")
 
-	authRouter.POST(urlLogin, controller.handlerLogin)
-	authRouter.POST(urlRegistration, controller.handlerRegistration)
-	authRouter.POST(urlRegistrationConfirm, controller.handlerRegistrationConfirm)
-	authRouter.POST(urlForgotPassword, controller.handlerForgotPassword)
-	authRouter.POST(urlForgotPasswordConfirm, controller.handlerForgotPasswordConfirm)
-	authRouter.POST(urlUpdateJWT, controller.handlerUpdateJWT)
+	authRouter.POST(
+		urlLogin,
+		controllers.NewControllerValidation(controller.handlerLogin, validateLoginDTO).Register,
+	)
+	authRouter.POST(
+		urlRegistration,
+		controllers.NewControllerValidation(controller.handlerRegistration, validateRegistrationDTO).Register,
+	)
+	authRouter.POST(
+		urlRegistrationConfirm,
+		controllers.NewControllerValidation(controller.handlerRegistrationConfirm, validateRegistrationConfirmDTO).Register,
+	)
+	authRouter.POST(
+		urlForgotPassword,
+		controllers.NewControllerValidation(controller.handlerForgotPassword, validateForgotPasswordDTO).Register,
+	)
+	authRouter.POST(
+		urlForgotPasswordConfirm,
+		controllers.NewControllerValidation(controller.handlerForgotPasswordConfirm, validateForgotPasswordConfirmDTO).Register,
+	)
+	authRouter.POST(
+		urlUpdateJWT,
+		controllers.NewController(controller.handlerUpdateJWT).Register,
+	)
 
 	authRouterWithAuth := authRouter.Group("")
 	authRouterWithAuth.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouterWithAuth.POST(urlLogout, controller.handlerLogout)
-	authRouterWithAuth.POST(urlLogoutAll, controller.handlerLogoutAll)
+	authRouterWithAuth.POST(
+		urlLogout, controllers.NewControllerWithUserID(controller.handlerLogout).Register,
+	)
+	authRouterWithAuth.POST(
+		urlLogoutAll, controllers.NewControllerWithUserID(controller.handlerLogoutAll).Register,
+	)
 }

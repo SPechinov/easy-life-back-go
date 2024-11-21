@@ -2,11 +2,9 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"go-clean/internal/api/rest/constants"
 	"go-clean/internal/api/rest/utils"
 	"go-clean/internal/api/rest/utils/rest_error"
 	globalConstants "go-clean/internal/constants"
@@ -16,27 +14,9 @@ import (
 	"net/http"
 )
 
-func (controller *restAuthController) handlerLogin(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	dto := new(LoginDTO)
-	err := echoCTX.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
+func (controller *restAuthController) handlerLogin(echoCTX echo.Context, ctx context.Context, dto *LoginDTO) error {
 	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
 	ctx = logger.WithPassword(ctx, dto.Password)
-	logger.Debug(ctx, "Start")
-
-	err = validateLoginDTO(dto)
-	if err != nil {
-		return err
-	}
 
 	sessionID, accessJWT, refreshJWT, err := controller.useCases.Login(
 		ctx,
@@ -54,33 +34,13 @@ func (controller *restAuthController) handlerLogin(echoCTX echo.Context) error {
 	}
 
 	setResponseAuthData(echoCTX, accessJWT, refreshJWT, sessionID)
-
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerRegistration(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	dto := new(RegistrationDTO)
-	err := echoCTX.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
+func (controller *restAuthController) handlerRegistration(echoCTX echo.Context, ctx context.Context, dto *RegistrationDTO) error {
 	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-	logger.Debug(ctx, "Start")
 
-	err = validateRegistrationDTO(dto)
-	if err != nil {
-		return err
-	}
-
-	err = controller.useCases.Registration(
+	err := controller.useCases.Registration(
 		ctx,
 		entities.UserAdd{
 			AuthWay: entities.UserAuthWay{
@@ -92,36 +52,15 @@ func (controller *restAuthController) handlerRegistration(echoCTX echo.Context) 
 	if err != nil {
 		return err
 	}
-
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerRegistrationConfirm(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	dto := new(RegistrationConfirmDTO)
-	err := echoCTX.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
+func (controller *restAuthController) handlerRegistrationConfirm(echoCTX echo.Context, ctx context.Context, dto *RegistrationConfirmDTO) error {
 	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
 	ctx = logger.WithConfirmationCode(ctx, dto.Code)
 	ctx = logger.WithPassword(ctx, dto.Password)
-	logger.Debug(ctx, "Start")
 
-	err = validateRegistrationConfirmDTO(dto)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	err = controller.useCases.RegistrationConfirm(
+	err := controller.useCases.RegistrationConfirm(
 		ctx,
 		entities.UserAddConfirm{
 			AuthWay: entities.UserAuthWay{
@@ -136,33 +75,13 @@ func (controller *restAuthController) handlerRegistrationConfirm(echoCTX echo.Co
 	if err != nil {
 		return err
 	}
-
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusCreated)
 }
 
-func (controller *restAuthController) handlerForgotPassword(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	dto := new(ForgotPasswordDTO)
-	err := echoCTX.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
+func (controller *restAuthController) handlerForgotPassword(echoCTX echo.Context, ctx context.Context, dto *ForgotPasswordDTO) error {
 	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-	logger.Debug(ctx, "Start")
 
-	err = validateForgotPasswordDTO(dto)
-	if err != nil {
-		return err
-	}
-
-	err = controller.useCases.ForgotPassword(
+	err := controller.useCases.ForgotPassword(
 		ctx,
 		entities.UserForgotPassword{
 			AuthWay: entities.UserAuthWay{
@@ -175,33 +94,14 @@ func (controller *restAuthController) handlerForgotPassword(echoCTX echo.Context
 		return err
 	}
 
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerForgotPasswordConfirm(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	dto := new(ForgotPasswordConfirmDTO)
-	err := echoCTX.Bind(dto)
-	if err != nil {
-		return rest_error.ErrInvalidBodyData
-	}
-
+func (controller *restAuthController) handlerForgotPasswordConfirm(echoCTX echo.Context, ctx context.Context, dto *ForgotPasswordConfirmDTO) error {
 	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
 	ctx = logger.WithPassword(ctx, dto.Password)
-	logger.Debug(ctx, "Start")
 
-	err = validateForgotPasswordConfirmDTO(dto)
-	if err != nil {
-		return err
-	}
-
-	err = controller.useCases.ForgotPasswordConfirm(
+	err := controller.useCases.ForgotPasswordConfirm(
 		ctx,
 		entities.UserForgotPasswordConfirm{
 			AuthWay: entities.UserAuthWay{
@@ -216,18 +116,10 @@ func (controller *restAuthController) handlerForgotPasswordConfirm(echoCTX echo.
 		return err
 	}
 
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerUpdateJWT(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	logger.Debug(ctx, "Start")
+func (controller *restAuthController) handlerUpdateJWT(echoCTX echo.Context, ctx context.Context) error {
 	// Check UUID
 	sessionID := utils.GetRequestSessionID(echoCTX)
 	err := uuid.Validate(sessionID)
@@ -267,24 +159,10 @@ func (controller *restAuthController) handlerUpdateJWT(echoCTX echo.Context) err
 
 	setResponseAuthData(echoCTX, newAccessJWT, newRefreshJWT, newSessionID)
 
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogout(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	logger.Debug(ctx, "Start")
-
-	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
-	if !ok {
-		return rest_error.ErrNotAuthorized
-	}
-
+func (controller *restAuthController) handlerLogout(echoCTX echo.Context, ctx context.Context, userID string) error {
 	// Check SessionID
 	sessionID := utils.GetRequestSessionID(echoCTX)
 	err := uuid.Validate(sessionID)
@@ -304,29 +182,14 @@ func (controller *restAuthController) handlerLogout(echoCTX echo.Context) error 
 
 	utils.ClearRefreshJWT(echoCTX)
 	utils.ClearSessionID(echoCTX)
-
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogoutAll(echoCTX echo.Context) error {
-	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
-	if !ok {
-		logger.Error(ctx, "No context")
-		return rest_error.ErrSomethingHappen
-	}
-
-	logger.Debug(ctx, "Start")
-	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
-	if !ok {
-		return rest_error.ErrNotAuthorized
-	}
-
+func (controller *restAuthController) handlerLogoutAll(echoCTX echo.Context, ctx context.Context, userID string) error {
 	controller.useCases.LogoutAll(ctx, entities.UserLogoutAll{ID: userID})
 
 	utils.ClearRefreshJWT(echoCTX)
 	utils.ClearSessionID(echoCTX)
 
-	logger.Debug(ctx, "Finish")
 	return echoCTX.NoContent(http.StatusNoContent)
 }

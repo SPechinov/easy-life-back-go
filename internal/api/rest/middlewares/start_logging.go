@@ -15,22 +15,12 @@ func StartLogging(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx := context.Background()
 		ctx = logger.WithRequestID(ctx, requestID)
 		ctx = logger.WithURL(ctx, echoCtx.Request().RequestURI)
-
-		// Group ID
-		if groupID := echoCtx.Param("groupID"); groupID != "" {
-			ctx = logger.WithGroupID(ctx, groupID)
-		}
-
 		utils.SetCTXLoggerInEchoCTX(echoCtx, ctx)
 
 		logger.Debug(ctx, "Start")
 		err := next(echoCtx)
+		logger.Debug(ctx, "Finish")
 
-		if err != nil {
-			logger.Debug(ctx, "Err")
-		} else {
-			logger.Debug(ctx, "Finish")
-		}
 		return err
 	}
 }
