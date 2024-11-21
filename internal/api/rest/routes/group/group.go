@@ -45,13 +45,13 @@ func (controller *restGroupController) Register(router *echo.Group) {
 		urlGroupPatch,
 		controllers.NewControllerUserIDValidation(controller.handlerPatchGroup, validatePatchDTO).Register,
 	)
-	authRouter.DELETE(
+	authRouter.POST(
 		urlGroupDelete,
 		controllers.NewControllerUserID(controller.handlerDelete).Register,
 	)
-	authRouter.DELETE(
+	authRouter.POST(
 		urlGroupDeleteConfirm,
-		controllers.NewControllerUserIDValidation(controller.handlerDeleteConfirm, validateDeleteDTO).Register,
+		controllers.NewControllerUserIDValidation(controller.handlerDeleteConfirm, validateDeleteConfirmDTO).Register,
 	)
 
 	authRouter.GET(

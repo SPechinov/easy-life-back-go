@@ -143,7 +143,7 @@ func (controller *restGroupController) handlerExcludeUserFromGroup(echoCTX echo.
 func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 
-	err := controller.useCases.Delete(ctx, groupID, userID)
+	err := controller.useCases.Delete(ctx, userID, groupID)
 	if err != nil {
 		return err
 	}
@@ -151,10 +151,10 @@ func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx c
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteDTO) error {
+func (controller *restGroupController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteConfirmDTO) error {
 	groupID := echoCTX.Param("groupID")
 
-	err := controller.useCases.DeleteConfirm(ctx, groupID, userID, dto.Code)
+	err := controller.useCases.DeleteConfirm(ctx, userID, groupID, dto.Code)
 	if err != nil {
 		return err
 	}

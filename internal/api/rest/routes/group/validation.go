@@ -42,7 +42,7 @@ func validateExcludeUserDTO(dto *ExcludeUserDTO) error {
 	return checkError(err)
 }
 
-func validateDeleteDTO(dto *DeleteDTO) error {
+func validateDeleteConfirmDTO(dto *DeleteConfirmDTO) error {
 	err := validation.ValidateStruct(dto,
 		validation.Field(&dto.Code, validation.Required, validation.Length(validation_rules.LenDeleteGroupCode, validation_rules.LenDeleteGroupCode)),
 	)
