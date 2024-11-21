@@ -187,35 +187,35 @@ func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.User
 	return err
 }
 
-func (ra RestAuth) UpdateJWT(ctx context.Context, userID, sessionID, refreshJWT string) (string, string, string, error) {
+func (ra RestAuth) UpdateJWT(ctx context.Context, entity entities.UserUpdateJWT) (string, string, string, error) {
 	// Check user in store
-	value, err := ra.store.GetSession(ctx, userID, sessionID)
-	if err != nil || value != refreshJWT {
+	value, err := ra.store.GetSession(ctx, entity.ID, entity.SessionID)
+	if err != nil || value != entity.RefreshJWT {
 		logger.Warn(ctx, "refreshJWT has not in redis")
 
-		go ra.store.DeleteAllSessions(ctx, userID)
+		go ra.store.DeleteAllSessions(ctx, entity.ID)
 		return "", "", "", client_error.ErrNotAuthorized
 	}
 
 	// Check user in DB
-	user, err := ra.service.GetUser(ctx, entities.UserGet{ID: userID})
+	user, err := ra.service.GetUser(ctx, entities.UserGet{ID: entity.ID})
 	if err != nil || user == nil {
 		logger.Warn(ctx, "user has not got in DB")
 		return "", "", "", client_error.ErrNotAuthorized
 	}
 
 	// Check is valid refreshJWT
-	isValid, _ := helpers.IsValidJWT(ra.cfg.HTTPAuth.JWTSecretKey, refreshJWT)
+	isValid, _ := helpers.IsValidJWT(ra.cfg.HTTPAuth.JWTSecretKey, entity.RefreshJWT)
 	if !isValid {
 		logger.Warn(ctx, "refreshJWT is not valid")
 		return "", "", "", rest_error.ErrNotAuthorized
 	}
 
 	// Delete old session
-	go ra.store.DeleteSession(ctx, userID, sessionID)
+	go ra.store.DeleteSession(ctx, entity.ID, entity.SessionID)
 
 	// Create JWTs
-	jwtData := ra.createJWTData(userID)
+	jwtData := ra.createJWTData(entity.ID)
 	newAccessJWT, newRefreshJWT, err := ra.createJWTPair(ctx, ra.cfg, jwtData)
 	if err != nil {
 		return "", "", "", err
@@ -223,7 +223,7 @@ func (ra RestAuth) UpdateJWT(ctx context.Context, userID, sessionID, refreshJWT 
 	newSessionID := generateSessionID()
 
 	// Set new session
-	err = ra.store.SetSession(ctx, userID, newSessionID, newRefreshJWT)
+	err = ra.store.SetSession(ctx, entity.ID, newSessionID, newRefreshJWT)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -231,12 +231,12 @@ func (ra RestAuth) UpdateJWT(ctx context.Context, userID, sessionID, refreshJWT 
 	return newSessionID, newAccessJWT, newRefreshJWT, nil
 }
 
-func (ra RestAuth) Logout(ctx context.Context, userID, sessionID string) {
-	go ra.store.DeleteSession(ctx, userID, sessionID)
+func (ra RestAuth) Logout(ctx context.Context, entity entities.UserLogout) {
+	go ra.store.DeleteSession(ctx, entity.ID, entity.SessionID)
 	return
 }
 
-func (ra RestAuth) LogoutAll(ctx context.Context, userID string) {
-	go ra.store.DeleteAllSessions(ctx, userID)
+func (ra RestAuth) LogoutAll(ctx context.Context, entity entities.UserLogoutAll) {
+	go ra.store.DeleteAllSessions(ctx, entity.ID)
 	return
 }

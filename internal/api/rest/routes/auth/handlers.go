@@ -16,15 +16,15 @@ import (
 	"net/http"
 )
 
-func (controller *restAuthController) handlerLogin(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerLogin(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	dto := new(LoginDTO)
-	err := c.Bind(dto)
+	err := echoCTX.Bind(dto)
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
@@ -53,21 +53,21 @@ func (controller *restAuthController) handlerLogin(c echo.Context) error {
 		return err
 	}
 
-	setResponseAuthData(c, accessJWT, refreshJWT, sessionID)
+	setResponseAuthData(echoCTX, accessJWT, refreshJWT, sessionID)
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerRegistration(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerRegistration(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	dto := new(RegistrationDTO)
-	err := c.Bind(dto)
+	err := echoCTX.Bind(dto)
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
@@ -94,18 +94,18 @@ func (controller *restAuthController) handlerRegistration(c echo.Context) error 
 	}
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerRegistrationConfirm(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerRegistrationConfirm(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	dto := new(RegistrationConfirmDTO)
-	err := c.Bind(dto)
+	err := echoCTX.Bind(dto)
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
@@ -138,18 +138,18 @@ func (controller *restAuthController) handlerRegistrationConfirm(c echo.Context)
 	}
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusCreated)
+	return echoCTX.NoContent(http.StatusCreated)
 }
 
-func (controller *restAuthController) handlerForgotPassword(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerForgotPassword(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	dto := new(ForgotPasswordDTO)
-	err := c.Bind(dto)
+	err := echoCTX.Bind(dto)
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
@@ -176,18 +176,18 @@ func (controller *restAuthController) handlerForgotPassword(c echo.Context) erro
 	}
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerForgotPasswordConfirm(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerForgotPasswordConfirm(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	dto := new(ForgotPasswordConfirmDTO)
-	err := c.Bind(dto)
+	err := echoCTX.Bind(dto)
 	if err != nil {
 		return rest_error.ErrInvalidBodyData
 	}
@@ -217,11 +217,11 @@ func (controller *restAuthController) handlerForgotPasswordConfirm(c echo.Contex
 	}
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerUpdateJWT(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
@@ -229,7 +229,7 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 
 	logger.Debug(ctx, "Start")
 	// Check UUID
-	sessionID := utils.GetRequestSessionID(c)
+	sessionID := utils.GetRequestSessionID(echoCTX)
 	err := uuid.Validate(sessionID)
 	if err != nil {
 		logger.Warn(ctx, "has not got session id")
@@ -239,7 +239,7 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 	ctx = logger.WithSessionID(ctx, sessionID)
 
 	// Check refreshJWT
-	refreshJWT := utils.GetRequestRefreshJWT(c)
+	refreshJWT := utils.GetRequestRefreshJWT(echoCTX)
 	isValid, token := helpers.IsValidJWT(controller.cfg.HTTPAuth.JWTSecretKey, refreshJWT)
 	if !isValid {
 		logger.Error(ctx, "refresh token invalid")
@@ -253,19 +253,26 @@ func (controller *restAuthController) handlerUpdateJWT(c echo.Context) error {
 		return rest_error.ErrNotAuthorized
 	}
 
-	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(ctx, userID, sessionID, refreshJWT)
+	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(
+		ctx,
+		entities.UserUpdateJWT{
+			ID:         userID,
+			SessionID:  sessionID,
+			RefreshJWT: refreshJWT,
+		},
+	)
 	if err != nil {
 		return rest_error.ErrNotAuthorized
 	}
 
-	setResponseAuthData(c, newAccessJWT, newRefreshJWT, newSessionID)
+	setResponseAuthData(echoCTX, newAccessJWT, newRefreshJWT, newSessionID)
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogout(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerLogout(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
@@ -273,13 +280,13 @@ func (controller *restAuthController) handlerLogout(c echo.Context) error {
 
 	logger.Debug(ctx, "Start")
 
-	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
 	if !ok {
 		return rest_error.ErrNotAuthorized
 	}
 
 	// Check SessionID
-	sessionID := utils.GetRequestSessionID(c)
+	sessionID := utils.GetRequestSessionID(echoCTX)
 	err := uuid.Validate(sessionID)
 	if err != nil {
 		return rest_error.ErrNotAuthorized
@@ -287,33 +294,39 @@ func (controller *restAuthController) handlerLogout(c echo.Context) error {
 
 	ctx = logger.WithSessionID(ctx, sessionID)
 
-	controller.useCases.Logout(ctx, userID, sessionID)
+	controller.useCases.Logout(
+		ctx,
+		entities.UserLogout{
+			ID:        userID,
+			SessionID: sessionID,
+		},
+	)
 
-	utils.ClearRefreshJWT(c)
-	utils.ClearSessionID(c)
+	utils.ClearRefreshJWT(echoCTX)
+	utils.ClearSessionID(echoCTX)
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogoutAll(c echo.Context) error {
-	ctx, ok := c.Get(constants.CTXLoggerInCTX).(context.Context)
+func (controller *restAuthController) handlerLogoutAll(echoCTX echo.Context) error {
+	ctx, ok := echoCTX.Get(constants.CTXLoggerInCTX).(context.Context)
 	if !ok {
 		logger.Error(ctx, "No context")
 		return rest_error.ErrSomethingHappen
 	}
 
 	logger.Debug(ctx, "Start")
-	userID, ok := c.Get(globalConstants.CTXUserIDKey).(string)
+	userID, ok := echoCTX.Get(globalConstants.CTXUserIDKey).(string)
 	if !ok {
 		return rest_error.ErrNotAuthorized
 	}
 
-	controller.useCases.LogoutAll(ctx, userID)
+	controller.useCases.LogoutAll(ctx, entities.UserLogoutAll{ID: userID})
 
-	utils.ClearRefreshJWT(c)
-	utils.ClearSessionID(c)
+	utils.ClearRefreshJWT(echoCTX)
+	utils.ClearSessionID(echoCTX)
 
 	logger.Debug(ctx, "Finish")
-	return c.NoContent(http.StatusNoContent)
+	return echoCTX.NoContent(http.StatusNoContent)
 }

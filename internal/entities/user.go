@@ -60,3 +60,18 @@ type UserForgotPasswordConfirm struct {
 	Password string
 	Code     string
 }
+
+type UserUpdateJWT struct {
+	ID         string
+	SessionID  string
+	RefreshJWT string
+}
+
+type UserLogout struct {
+	ID        string
+	SessionID string
+}
+
+type UserLogoutAll struct {
+	ID string
+}
