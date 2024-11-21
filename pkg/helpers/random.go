@@ -2,21 +2,27 @@ package helpers
 
 import (
 	"crypto/rand"
-	"math/big"
+	mathrand "math/rand"
+	"time"
 )
 
-const charset = "0123456789"
-
-func GenerateRandomCode(n int) (string, error) {
+func GenerateRandomCode(n int) string {
+	const charset = "0123456789"
 	code := make([]byte, n)
+	randomBytes := make([]byte, n)
 
-	for i := range code {
-		num, err := rand.Int(rand.Reader, big.NewInt(10))
-		if err != nil {
-			return "", err
+	if _, err := rand.Read(randomBytes); err != nil {
+		// Use fallback
+		rnd := mathrand.New(mathrand.NewSource(time.Now().UnixNano()))
+		for i := range code {
+			code[i] = charset[rnd.Intn(len(charset))]
 		}
-		code[i] = charset[num.Int64()]
+		return string(code)
 	}
 
-	return string(code), nil
+	for i, b := range randomBytes {
+		code[i] = charset[b%uint8(len(charset))]
+	}
+
+	return string(code)
 }

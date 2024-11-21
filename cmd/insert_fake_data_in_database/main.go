@@ -6,6 +6,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"go-clean/config"
 	"go-clean/internal/composites"
+	"go-clean/pkg/helpers"
 	"go-clean/pkg/postgres"
 	"strconv"
 	"time"
@@ -21,7 +22,7 @@ func main() {
 	}
 
 	// Postgres
-	db, err := composites.NewPostgres(ctx, &postgres.Options{
+	_, err = composites.NewPostgres(ctx, &postgres.Options{
 		Host:     cfg.Postgres.Host,
 		Port:     cfg.Postgres.Port,
 		User:     cfg.Postgres.User,
@@ -30,7 +31,17 @@ func main() {
 		SSLMode:  cfg.Postgres.SSLMode,
 	})
 
-	groupUsers(ctx, db)
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
+	fmt.Println(helpers.GenerateRandomCode(6))
 }
 
 func users(ctx context.Context, postgres postgres.Client) {

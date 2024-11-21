@@ -163,16 +163,11 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	}
 
 	// Set code to store
-	code, err := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
-	if err != nil {
-		logger.Debug(ctx, err)
-		return err
-	}
-
+	code := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
-	err = g.groupStore.SetGroupDeleteCode(ctx, groupID, code)
+	err := g.groupStore.SetGroupDeleteCode(ctx, groupID, code)
 	if err != nil {
 		return err
 	}

@@ -75,12 +75,7 @@ func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) erro
 	}
 
 	// Set code to store
-	code, err := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
-	if err != nil {
-		logger.Debug(ctx, err)
-		return err
-	}
-
+	code := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
 	ctx = logger.WithConfirmationCode(ctx, code)
 
 	logger.Debug(ctx, "Code sent")
@@ -147,12 +142,7 @@ func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotP
 	}
 
 	// Set code to store
-	code, err := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
-	if err != nil {
-		logger.Debug(ctx, err)
-		return err
-	}
-
+	code := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
