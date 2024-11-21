@@ -8,13 +8,11 @@ import (
 
 type Group struct {
 	groupDatabase groupDatabase
-	userService   userService
 }
 
-func New(groupDatabase groupDatabase, userService userService) *Group {
+func New(groupDatabase groupDatabase) *Group {
 	return &Group{
 		groupDatabase: groupDatabase,
-		userService:   userService,
 	}
 }
 
@@ -43,54 +41,6 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) GetFull(ctx context.Context, entity entities.GroupGet) (*entities.GroupFull, error) {
-	groupChannel := make(chan *entities.Group, 1)
-	usersChannel := make(chan []entities.GroupUser, 1)
-	errChannel := make(chan error, 2)
-
-	go func() {
-		group, err := g.groupDatabase.Get(ctx, entities.GroupGet{ID: entity.ID})
-		if err != nil {
-			errChannel <- err
-			return
-		}
-		groupChannel <- group
-	}()
-
-	go func() {
-		users, err := g.groupDatabase.GetUsersList(ctx, entities.GroupGetUsersList{ID: entity.ID})
-		if err != nil {
-			errChannel <- err
-			return
-		}
-		usersChannel <- users
-	}()
-
-	var groupInfo *entities.Group
-	var users []entities.GroupUser
-
-	select {
-	case groupInfo = <-groupChannel:
-	case err := <-errChannel:
-		return nil, err
-	}
-
-	select {
-	case users = <-usersChannel:
-	case err := <-errChannel:
-		return nil, err
-	}
-
-	group := entities.GroupFull{
-		Group: *groupInfo,
-		Users: users,
-	}
-
-	group.Users = users
-
-	return &group, nil
-}
-
 func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	return g.groupDatabase.GetList(ctx, entity)
 }
@@ -115,18 +65,6 @@ func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) bool {
 
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
 	return g.groupDatabase.GetGroupUser(ctx, userID, groupID)
-}
-
-func (g *Group) GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
-	return g.groupDatabase.GetUsersList(ctx, entity)
-}
-
-func (g *Group) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
-	return g.groupDatabase.InviteUser(ctx, entity)
-}
-
-func (g *Group) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
-	return g.groupDatabase.ExcludeUser(ctx, entity)
 }
 
 func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {

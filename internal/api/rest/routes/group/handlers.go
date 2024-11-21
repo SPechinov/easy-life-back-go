@@ -2,7 +2,6 @@ package group
 
 import (
 	"context"
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"go-clean/internal/api/rest"
 	"go-clean/internal/entities"
@@ -41,22 +40,7 @@ func (controller *restGroupController) handlerAddGroup(echoCTX echo.Context, ctx
 	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGetFullGroup(echoCTX echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCTX.Param("groupID")
-
-	group, err := controller.useCases.GetFull(
-		ctx,
-		userID,
-		entities.GroupGet{ID: groupID},
-	)
-	if err != nil {
-		return err
-	}
-
-	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
-}
-
-func (controller *restGroupController) handlerGetGroupInfo(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupController) handlerGetGroup(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 
 	groupInfo, err := controller.useCases.Get(
@@ -69,21 +53,6 @@ func (controller *restGroupController) handlerGetGroupInfo(echoCTX echo.Context,
 	}
 
 	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(groupInfo))
-}
-
-func (controller *restGroupController) handlerGetGroupUsers(echoCTX echo.Context, ctx context.Context, userID string) error {
-	groupID := echoCTX.Param("groupID")
-
-	usersList, err := controller.useCases.GetUsersList(
-		ctx,
-		userID,
-		entities.GroupGetUsersList{ID: groupID},
-	)
-	if err != nil {
-		return err
-	}
-
-	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(usersList))
 }
 
 func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
@@ -101,42 +70,6 @@ func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, c
 	}
 
 	logger.Info(ctx, "Group updated")
-	return echoCTX.NoContent(http.StatusNoContent)
-}
-
-func (controller *restGroupController) handlerInviteUserInGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *InviteUserDTO) error {
-	groupID := echoCTX.Param("groupID")
-	err := controller.useCases.InviteUser(
-		ctx,
-		userID,
-		entities.GroupInviteUser{
-			ID:     groupID,
-			UserID: dto.UserID,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	logger.Info(ctx, fmt.Sprintf("User invited: %s", dto.UserID))
-	return echoCTX.NoContent(http.StatusNoContent)
-}
-
-func (controller *restGroupController) handlerExcludeUserFromGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *ExcludeUserDTO) error {
-	groupID := echoCTX.Param("groupID")
-	err := controller.useCases.ExcludeUser(
-		ctx,
-		userID,
-		entities.GroupExcludeUser{
-			ID:     groupID,
-			UserID: dto.UserID,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	logger.Info(ctx, fmt.Sprintf("User excluded: %s", dto.UserID))
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 

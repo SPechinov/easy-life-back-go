@@ -18,19 +18,6 @@ type GroupFull struct {
 	Users []GroupUser
 }
 
-type GroupUser struct {
-	ID         string
-	Email      string
-	Phone      string
-	FirstName  string
-	LastName   *string
-	Permission int
-	CreatedAt  string
-	UpdatedAt  string
-	DeletedAt  *string
-	InvitedAt  string
-}
-
 type GroupsGetList struct {
 	UserID  string
 	Deleted bool
@@ -44,10 +31,6 @@ type GroupGetInfo struct {
 	ID string
 }
 
-type GroupGetUsersList struct {
-	ID string
-}
-
 type GroupAdd struct {
 	Name    string
 	AdminID string
@@ -56,16 +39,6 @@ type GroupAdd struct {
 type GroupPatch struct {
 	ID   string
 	Name *string
-}
-
-type GroupInviteUser struct {
-	ID     string
-	UserID string
-}
-
-type GroupExcludeUser struct {
-	ID     string
-	UserID string
 }
 
 type GroupDelete struct {

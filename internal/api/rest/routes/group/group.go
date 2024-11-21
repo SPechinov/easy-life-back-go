@@ -15,10 +15,6 @@ const (
 	urlGroupDeleteConfirm = "/:groupID/delete-confirm"
 	urlGroupsList         = ""
 	urlGroup              = "/:groupID"
-	urlGroupInfo          = "/:groupID/info"
-	urlGroupUsers         = "/:groupID/users"
-	urlGroupInviteUser    = "/:groupID/invite-user"
-	urlGroupExcludeUser   = "/:groupID/exclude-user"
 )
 
 type restGroupController struct {
@@ -33,50 +29,33 @@ func New(cfg *config.Config, useCases useCases) rest.Handler {
 	}
 }
 
-func (controller *restGroupController) Register(router *echo.Group) {
-	authRouter := router.Group("/groups")
-	authRouter.Use(middlewares.AuthMiddleware(controller.cfg))
+func (controller *restGroupController) Register(group *echo.Group) {
+	router := group.Group("/groups")
+	router.Use(middlewares.AuthMiddleware(controller.cfg))
 
-	authRouter.POST(
+	router.POST(
 		urlGroupAdd,
 		controllers.NewControllerUserIDValidation(controller.handlerAddGroup, validateAddDTO).Register,
 	)
-	authRouter.PATCH(
+	router.PATCH(
 		urlGroupPatch,
 		controllers.NewControllerUserIDValidation(controller.handlerPatchGroup, validatePatchDTO).Register,
 	)
-	authRouter.POST(
+	router.POST(
 		urlGroupDelete,
 		controllers.NewControllerUserID(controller.handlerDelete).Register,
 	)
-	authRouter.POST(
+	router.POST(
 		urlGroupDeleteConfirm,
 		controllers.NewControllerUserIDValidation(controller.handlerDeleteConfirm, validateDeleteConfirmDTO).Register,
 	)
 
-	authRouter.GET(
+	router.GET(
 		urlGroupsList,
 		controllers.NewControllerUserID(controller.handlerGetGroupsList).Register,
 	)
-	authRouter.GET(
+	router.GET(
 		urlGroup,
-		controllers.NewControllerUserID(controller.handlerGetFullGroup).Register,
-	)
-	authRouter.GET(
-		urlGroupInfo,
-		controllers.NewControllerUserID(controller.handlerGetGroupInfo).Register,
-	)
-	authRouter.GET(
-		urlGroupUsers,
-		controllers.NewControllerUserID(controller.handlerGetGroupUsers).Register,
-	)
-
-	authRouter.POST(
-		urlGroupInviteUser,
-		controllers.NewControllerUserIDValidation(controller.handlerInviteUserInGroup, validateInviteUserDTO).Register,
-	)
-	authRouter.POST(
-		urlGroupExcludeUser,
-		controllers.NewControllerUserIDValidation(controller.handlerExcludeUserFromGroup, validateExcludeUserDTO).Register,
+		controllers.NewControllerUserID(controller.handlerGetGroup).Register,
 	)
 }
