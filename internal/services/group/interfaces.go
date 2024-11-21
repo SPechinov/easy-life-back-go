@@ -11,5 +11,4 @@ type groupDatabase interface {
 	Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error)
 	GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error)
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
-	Delete(ctx context.Context, entity entities.GroupDelete) error
 }

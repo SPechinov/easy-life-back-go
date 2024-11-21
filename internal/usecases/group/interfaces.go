@@ -21,5 +21,4 @@ type groupService interface {
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
 	IsDeletedGroup(ctx context.Context, groupID string) bool
 	IsGroupAdmin(ctx context.Context, userID, groupID string) bool
-	Delete(ctx context.Context, entity entities.GroupDelete) error
 }

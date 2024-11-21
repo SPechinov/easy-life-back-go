@@ -37,8 +37,9 @@ type GroupAdd struct {
 }
 
 type GroupPatch struct {
-	ID   string
-	Name *string
+	ID     string
+	Name   *string
+	Delete *bool
 }
 
 type GroupDelete struct {

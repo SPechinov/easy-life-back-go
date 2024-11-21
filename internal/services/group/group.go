@@ -75,7 +75,3 @@ func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
 
 	return group.Deleted()
 }
-
-func (g *Group) Delete(ctx context.Context, entity entities.GroupDelete) error {
-	return g.groupDatabase.Delete(ctx, entity)
-}

@@ -111,5 +111,8 @@ func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string
 		return err
 	}
 
-	return nil
+	return g.groupService.Patch(ctx, entities.GroupPatch{
+		ID:     groupID,
+		Delete: helpers.BoolToPtr(true),
+	})
 }

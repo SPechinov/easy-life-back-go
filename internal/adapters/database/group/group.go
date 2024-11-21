@@ -67,11 +67,13 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (string, erro
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	query := `
 		UPDATE public.groups
-		SET name = COALESCE(NULLIF($1, ''), name)
-		WHERE id = $2
+		SET 
+		    name = COALESCE(NULLIF($1, ''), name),
+			deleted_at = CASE WHEN $2 = true THEN CURRENT_TIMESTAMP ELSE deleted_at END
+		WHERE id = $3
 	`
 
-	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.ID)
+	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.Delete, entity.ID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err
@@ -233,8 +235,4 @@ func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*enti
 		DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
 		InvitedAt:  user.invitedAt.Format(time.RFC3339),
 	}, nil
-}
-
-func (g *Group) Delete(ctx context.Context, entity entities.GroupDelete) error {
-	return nil
 }
