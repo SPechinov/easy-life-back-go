@@ -10,19 +10,21 @@ import (
 )
 
 var appErrorMapping = map[string]*rest_error.RestError{
-	client_error.ErrNotAuthorized.Error():     rest_error.ErrNotAuthorized,
-	client_error.ErrIncorrectPassword.Error(): rest_error.ErrIncorrectPassword,
-	client_error.ErrUserNotFound.Error():      rest_error.ErrUserNotFound,
-	client_error.ErrCodeIsNotInRedis.Error():  rest_error.ErrCodeDidNotSent,
-	client_error.ErrUserExists.Error():        rest_error.ErrUserExists,
-	client_error.ErrCodeMaxAttempts.Error():   rest_error.ErrCodeMaxAttempts,
-	client_error.ErrCodesIsNotEqual.Error():   rest_error.ErrCodesIsNotEqual,
-	client_error.ErrUserDeleted.Error():       rest_error.ErrUserDeleted,
-	client_error.ErrUserNotAdminGroup.Error(): rest_error.ErrUserNotAdminGroup,
-	client_error.ErrUserNotInGroup.Error():    rest_error.ErrUserNotInGroup,
-	client_error.ErrUserInvited.Error():       rest_error.ErrUserInvited,
-	client_error.ErrUserAdminGroup.Error():    rest_error.ErrUserAdminGroup,
-	client_error.ErrGroupDeleted.Error():      rest_error.ErrGroupNotExist,
+	client_error.ErrNotAuthorized.Error():      rest_error.ErrNotAuthorized,
+	client_error.ErrIncorrectPassword.Error():  rest_error.ErrIncorrectPassword,
+	client_error.ErrUserNotFound.Error():       rest_error.ErrUserNotFound,
+	client_error.ErrCodeIsNotInRedis.Error():   rest_error.ErrCodeDidNotSent,
+	client_error.ErrUserExists.Error():         rest_error.ErrUserExists,
+	client_error.ErrCodeMaxAttempts.Error():    rest_error.ErrCodeMaxAttempts,
+	client_error.ErrCodesIsNotEqual.Error():    rest_error.ErrCodesIsNotEqual,
+	client_error.ErrUserDeleted.Error():        rest_error.ErrUserDeleted,
+	client_error.ErrUserNotAdminGroup.Error():  rest_error.ErrUserNotAdminGroup,
+	client_error.ErrUserNotInGroup.Error():     rest_error.ErrUserNotInGroup,
+	client_error.ErrUserInvited.Error():        rest_error.ErrUserInvited,
+	client_error.ErrUserAdminGroup.Error():     rest_error.ErrUserAdminGroup,
+	client_error.ErrGroupDeleted.Error():       rest_error.ErrGroupNotExist,
+	client_error.ErrNoteDeleted.Error():        rest_error.ErrNoteDeleted,
+	client_error.ErrUserNotCreatorNote.Error(): rest_error.ErrUserNotCreatorNote,
 }
 
 func ResponseMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
