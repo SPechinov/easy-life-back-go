@@ -3,11 +3,11 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 --  table
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    email TEXT UNIQUE,
-    phone TEXT UNIQUE,
+    email VARCHAR(60) UNIQUE,
+    phone VARCHAR(20) UNIQUE,
     password BYTEA NOT NULL,
-    first_name TEXT NOT NULL,
-    last_name TEXT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP
