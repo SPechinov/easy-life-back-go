@@ -1,7 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- users_groups table
-CREATE TABLE IF NOT EXISTS public.users_groups (
+-- groups_users table
+CREATE TABLE IF NOT EXISTS public.groups_users (
     group_id UUID NOT NULL,
     user_id UUID NOT NULL,
     permission INT NOT NULL,
@@ -13,4 +13,4 @@ CREATE TABLE IF NOT EXISTS public.users_groups (
 );
 
 --  indexes
-CREATE INDEX unique_id_index_user_group ON users_groups (group_id, user_id);
+CREATE INDEX unique_id_index_user_group ON groups_users (group_id, user_id);

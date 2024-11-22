@@ -46,7 +46,7 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (string, erro
 	}
 
 	queryUsersGroup := `
-		INSERT INTO public.users_groups (group_id, user_id, permission)
+		INSERT INTO public.groups_users (group_id, user_id, permission)
 		VALUES ($1, $2, $3)
 	`
 
@@ -127,10 +127,10 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 		    public.groups.created_at,
 		    public.groups.updated_at,
 		    public.groups.deleted_at
-		FROM public.users_groups
+		FROM public.groups_users
 
 		LEFT JOIN public.groups
-			ON public.groups.id = public.users_groups.group_id
+			ON public.groups.id = public.groups_users.group_id
 
 		WHERE 
 		    user_id = $1 
@@ -182,8 +182,8 @@ func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*enti
 	query := `
 		-- Users groups
 		SELECT
-   			public.users_groups.invited_at,
-   			public.users_groups.permission,
+   			public.groups_users.invited_at,
+   			public.groups_users.permission,
    			
    			public.users.id,
    			public.users.email,
@@ -193,12 +193,12 @@ func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*enti
    			public.users.created_at,
    			public.users.updated_at,
    			public.users.deleted_at
-		FROM public.users_groups
+		FROM public.groups_users
 
 		LEFT JOIN public.users
-			ON public.users.id = public.users_groups.user_id
+			ON public.users.id = public.groups_users.user_id
 
-		WHERE  public.users_groups.user_id = $1 AND public.users_groups.group_id = $2
+		WHERE  public.groups_users.user_id = $1 AND public.groups_users.group_id = $2
 	`
 
 	var user dataUser

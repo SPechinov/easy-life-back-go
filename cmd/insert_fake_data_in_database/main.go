@@ -99,7 +99,7 @@ func addGroup(ctx context.Context, postgres postgres.Client) {
 
 	userId := "a026d602-9472-44d6-8742-ed611e8ef94e"
 	queryUsersGroup := `
-		INSERT INTO public.users_groups (group_id, user_id, permission)
+		INSERT INTO public.groups_users (group_id, user_id, permission)
 		VALUES ($1, $2, $3)
 	`
 	_, err = tx.Exec(ctx, queryUsersGroup, groupID, userId, 777)
@@ -131,7 +131,7 @@ func groups(ctx context.Context, postgres postgres.Client) {
 
 func addUserInGroup(ctx context.Context, postgres postgres.Client, groupID, userID string) {
 	queryUsersGroup := `
-			INSERT INTO public.users_groups (group_id, user_id, permission)
+			INSERT INTO public.groups_users (group_id, user_id, permission)
 			VALUES ($1, $2, 0)
 	`
 	_, err := postgres.Exec(ctx, queryUsersGroup, groupID, userID)

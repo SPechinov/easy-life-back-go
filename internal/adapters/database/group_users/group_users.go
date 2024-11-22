@@ -26,8 +26,8 @@ func New(postgres postgres.Client) *GroupUsers {
 func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
 	query := `
 		SELECT
-			public.users_groups.invited_at,
-   			public.users_groups.permission,
+			public.groups_users.invited_at,
+   			public.groups_users.permission,
    			
    			public.users.id,
    			public.users.email,
@@ -37,11 +37,11 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
    			public.users.created_at,
    			public.users.updated_at,
    			public.users.deleted_at
-		FROM public.users_groups
+		FROM public.groups_users
 		
-		LEFT JOIN public.users ON public.users.id = public.users_groups.user_id
+		LEFT JOIN public.users ON public.users.id = public.groups_users.user_id
 		
-		WHERE public.users_groups.group_id = $1
+		WHERE public.groups_users.group_id = $1
 		
 	`
 
@@ -93,7 +93,7 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
 func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
 	query :=
 		`
-			INSERT INTO public.users_groups (group_id, user_id, permission)
+			INSERT INTO public.groups_users (group_id, user_id, permission)
 			VALUES ($1, $2, 0)
 		`
 
@@ -114,7 +114,7 @@ func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInvit
 func (gu *GroupUsers) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
 	query :=
 		`
-			DELETE FROM public.users_groups WHERE group_id = $1 AND user_id = $2 AND permission != $3
+			DELETE FROM public.groups_users WHERE group_id = $1 AND user_id = $2 AND permission != $3
 		`
 
 	_, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)

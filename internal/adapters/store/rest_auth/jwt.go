@@ -7,11 +7,11 @@ import (
 )
 
 func getKeySession(userID, sessionID string) string {
-	return "rest-auth:session:" + userID + ":" + sessionID
+	return "http:rest-auth:session:" + userID + ":" + sessionID
 }
 
 func getKeyAllUserIDSession(userID string) string {
-	return "rest-auth:session:" + userID + ":*"
+	return "http:rest-auth:session:" + userID + ":*"
 }
 
 func (ra *RestAuth) SetSession(ctx context.Context, userID, sessionID, refreshJWT string) error {
