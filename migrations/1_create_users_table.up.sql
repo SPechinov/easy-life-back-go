@@ -14,9 +14,9 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 
 --  indexes
-CREATE UNIQUE INDEX IF NOT EXISTS unique_id_index_users_id ON public.users(id);
-CREATE UNIQUE INDEX IF NOT EXISTS unique_id_index_users_email ON public.users(email);
-CREATE UNIQUE INDEX IF NOT EXISTS unique_id_index_users_phone ON public.users(phone);
+CREATE UNIQUE INDEX IF NOT EXISTS uid_users_id ON public.users(id);
+CREATE UNIQUE INDEX IF NOT EXISTS uid_users_email ON public.users(email);
+CREATE UNIQUE INDEX IF NOT EXISTS uid_users_phone ON public.users(phone);
 
 --  triggers
 DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;

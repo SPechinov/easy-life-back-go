@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.groups
 );
 
 --  indexes
-CREATE UNIQUE INDEX IF NOT EXISTS unique_id_index_group_id ON public.groups (id);
+CREATE UNIQUE INDEX IF NOT EXISTS uid_group_id ON public.groups (id);
 
 --  triggers
 DROP TRIGGER IF EXISTS update_groups_updated_at ON public.groups;
