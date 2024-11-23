@@ -126,7 +126,7 @@ func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInvit
 		FROM valid_group CROSS JOIN valid_user
 	`
 
-	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID)
+	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.InvitingUserID)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
@@ -159,7 +159,7 @@ func (gu *GroupUsers) ExcludeUser(ctx context.Context, entity entities.GroupExcl
 			AND public.groups.deleted_at IS NULL
 	`
 
-	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)
+	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.ExcludingUserID, constants.DefaultAdminPermission)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err

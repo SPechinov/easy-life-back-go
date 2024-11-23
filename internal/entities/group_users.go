@@ -15,14 +15,17 @@ type GroupUser struct {
 
 type GroupGetUsersList struct {
 	GroupID string
+	UserID  string
 }
 
 type GroupInviteUser struct {
-	GroupID string
-	UserID  string
+	GroupID        string
+	UserID         string
+	InvitingUserID string
 }
 
 type GroupExcludeUser struct {
-	GroupID string
-	UserID  string
+	GroupID         string
+	UserID          string
+	ExcludingUserID string
 }

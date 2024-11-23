@@ -21,8 +21,8 @@ func New(cfg *config.Config, groupUsersService groupUsersService, groupService g
 	}
 }
 
-func (gu *GroupUsers) GetList(ctx context.Context, userID string, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
-	user, err := gu.groupService.GetGroupUser(ctx, userID, entity.GroupID)
+func (gu *GroupUsers) GetList(ctx context.Context, entity entities.GroupGetUsersList) ([]entities.GroupUser, error) {
+	user, err := gu.groupService.GetGroupUser(ctx, entity.UserID, entity.GroupID)
 	if user == nil && err == nil {
 		return nil, client_error.ErrUserNotInGroup
 	}
@@ -30,16 +30,16 @@ func (gu *GroupUsers) GetList(ctx context.Context, userID string, entity entitie
 	return gu.groupUsersService.GetList(ctx, entity)
 }
 
-func (gu *GroupUsers) Invite(ctx context.Context, adminID string, entity entities.GroupInviteUser) error {
-	err := gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
+func (gu *GroupUsers) Invite(ctx context.Context, entity entities.GroupInviteUser) error {
+	err := gu.groupService.IsGroupAdmin(ctx, entity.UserID, entity.GroupID)
 	if err != nil {
 		return err
 	}
 	return gu.groupUsersService.InviteUser(ctx, entity)
 }
 
-func (gu *GroupUsers) Exclude(ctx context.Context, adminID string, entity entities.GroupExcludeUser) error {
-	err := gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
+func (gu *GroupUsers) Exclude(ctx context.Context, entity entities.GroupExcludeUser) error {
+	err := gu.groupService.IsGroupAdmin(ctx, entity.UserID, entity.GroupID)
 	if err != nil {
 		return err
 	}

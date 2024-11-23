@@ -9,7 +9,13 @@ import (
 
 func (controller *restGroupUsersController) handlerGetList(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
-	list, err := controller.useCases.GetList(ctx, userID, entities.GroupGetUsersList{GroupID: groupID})
+	list, err := controller.useCases.GetList(
+		ctx,
+		entities.GroupGetUsersList{
+			GroupID: groupID,
+			UserID:  userID,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -18,7 +24,14 @@ func (controller *restGroupUsersController) handlerGetList(echoCTX echo.Context,
 
 func (controller *restGroupUsersController) handlerInviteUserInGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *InviteUserDTO) error {
 	groupID := echoCTX.Param("groupID")
-	err := controller.useCases.Invite(ctx, userID, entities.GroupInviteUser{GroupID: groupID, UserID: dto.UserID})
+	err := controller.useCases.Invite(
+		ctx,
+		entities.GroupInviteUser{
+			GroupID:        groupID,
+			UserID:         userID,
+			InvitingUserID: dto.UserID,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -27,7 +40,14 @@ func (controller *restGroupUsersController) handlerInviteUserInGroup(echoCTX ech
 
 func (controller *restGroupUsersController) handleExcludeUserInGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *ExcludeUserDTO) error {
 	groupID := echoCTX.Param("groupID")
-	err := controller.useCases.Exclude(ctx, userID, entities.GroupExcludeUser{GroupID: groupID, UserID: dto.UserID})
+	err := controller.useCases.Exclude(
+		ctx,
+		entities.GroupExcludeUser{
+			GroupID:         groupID,
+			UserID:          userID,
+			ExcludingUserID: dto.UserID,
+		},
+	)
 	if err != nil {
 		return err
 	}
