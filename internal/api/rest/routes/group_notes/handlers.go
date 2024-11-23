@@ -1,4 +1,4 @@
-package group_note
+package group_notes
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (controller *restGroupNoteController) GetList(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupNotesController) GetList(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 	list, err := controller.useCases.GetList(
 		ctx,
@@ -23,7 +23,7 @@ func (controller *restGroupNoteController) GetList(echoCTX echo.Context, ctx con
 	return echoCTX.JSON(http.StatusOK, list)
 }
 
-func (controller *restGroupNoteController) Get(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupNotesController) Get(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 	noteID := echoCTX.Param("noteID")
 
@@ -42,7 +42,7 @@ func (controller *restGroupNoteController) Get(echoCTX echo.Context, ctx context
 	return echoCTX.JSON(http.StatusOK, list)
 }
 
-func (controller *restGroupNoteController) Add(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
+func (controller *restGroupNotesController) Add(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
 	groupID := echoCTX.Param("groupID")
 
 	err := controller.useCases.Add(
@@ -61,7 +61,7 @@ func (controller *restGroupNoteController) Add(echoCTX echo.Context, ctx context
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupNoteController) Patch(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
+func (controller *restGroupNotesController) Patch(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
 	groupID := echoCTX.Param("groupID")
 	noteID := echoCTX.Param("noteID")
 
@@ -82,7 +82,7 @@ func (controller *restGroupNoteController) Patch(echoCTX echo.Context, ctx conte
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupNoteController) Delete(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupNotesController) Delete(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 	noteID := echoCTX.Param("noteID")
 

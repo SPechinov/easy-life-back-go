@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type database interface {
+type usersDatabase interface {
 	Add(ctx context.Context, data entities.UserAddConfirm) error
 	Restore(ctx context.Context, data entities.UserAddConfirm) error
 	Get(ctx context.Context, data entities.UserGet) (*entities.User, error)
@@ -17,12 +17,12 @@ type database interface {
 }
 
 type Users struct {
-	database database
+	usersDatabase usersDatabase
 }
 
-func New(database database) *Users {
+func New(database usersDatabase) *Users {
 	return &Users{
-		database: database,
+		usersDatabase: database,
 	}
 }
 
@@ -33,7 +33,7 @@ func (u *Users) Add(ctx context.Context, data entities.UserAddConfirm) error {
 		return err
 	}
 
-	err = u.database.Add(ctx, entities.UserAddConfirm{
+	err = u.usersDatabase.Add(ctx, entities.UserAddConfirm{
 		AuthWay:   data.AuthWay,
 		FirstName: data.FirstName,
 		Password:  hashedPassword,
@@ -50,7 +50,7 @@ func (u *Users) Restore(ctx context.Context, data entities.UserAddConfirm) error
 		return err
 	}
 
-	err = u.database.Restore(ctx, entities.UserAddConfirm{
+	err = u.usersDatabase.Restore(ctx, entities.UserAddConfirm{
 		AuthWay:   data.AuthWay,
 		FirstName: data.FirstName,
 		Password:  hashedPassword,
@@ -60,12 +60,12 @@ func (u *Users) Restore(ctx context.Context, data entities.UserAddConfirm) error
 }
 
 func (u *Users) Get(ctx context.Context, data entities.UserGet) (*entities.User, error) {
-	user, err := u.database.Get(ctx, data)
+	user, err := u.usersDatabase.Get(ctx, data)
 	return user, err
 }
 
 func (u *Users) GetDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error) {
-	return u.database.GetDeletedTime(ctx, entity)
+	return u.usersDatabase.GetDeletedTime(ctx, entity)
 }
 
 func (u *Users) UpdatePassword(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
@@ -74,7 +74,7 @@ func (u *Users) UpdatePassword(ctx context.Context, data entities.UserForgotPass
 		logger.Error(ctx, err)
 		return err
 	}
-	err = u.database.UpdatePassword(ctx, entities.UserForgotPasswordConfirm{
+	err = u.usersDatabase.UpdatePassword(ctx, entities.UserForgotPasswordConfirm{
 		AuthWay:  data.AuthWay,
 		Password: hashedPassword,
 		Code:     data.Code,

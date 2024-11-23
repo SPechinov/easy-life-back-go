@@ -1,4 +1,4 @@
-package group_note
+package group_notes
 
 import (
 	"github.com/labstack/echo/v4"
@@ -16,19 +16,19 @@ const (
 	urlGroupDelete    = "/notes/:noteID"
 )
 
-type restGroupNoteController struct {
+type restGroupNotesController struct {
 	cfg      *config.Config
 	useCases useCases
 }
 
 func New(cfg *config.Config, useCases useCases) rest.Handler {
-	return &restGroupNoteController{
+	return &restGroupNotesController{
 		cfg:      cfg,
 		useCases: useCases,
 	}
 }
 
-func (controller *restGroupNoteController) Register(group *echo.Group) {
+func (controller *restGroupNotesController) Register(group *echo.Group) {
 	router := group.Group("/groups/:groupID/notes")
 	router.Use(middlewares.AuthMiddleware(controller.cfg))
 

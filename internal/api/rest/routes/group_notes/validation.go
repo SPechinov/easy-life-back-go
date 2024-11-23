@@ -1,4 +1,4 @@
-package group_note
+package group_notes
 
 import (
 	"github.com/go-ozzo/ozzo-validation/v4"

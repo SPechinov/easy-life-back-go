@@ -1,4 +1,4 @@
-package group_note
+package group_notes
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package group_note
+package group_notes
 
 type AddDTO struct {
 	Title       string `json:"title" form:"title"`
