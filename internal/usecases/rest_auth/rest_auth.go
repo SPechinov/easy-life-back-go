@@ -68,25 +68,27 @@ func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionI
 }
 
 func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) error {
-	// Check has user or not
-	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	deletedAt, err := ra.service.GetUserDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	// DB error
 	if err != nil && !errors.Is(err, client_error.ErrUserNotFound) {
 		return err
 	}
 
-	// If user deleted restore
-	if dbUser != nil {
-		if !dbUser.Deleted() {
-			logger.Debug(ctx, "User exist")
-			return client_error.ErrUserExists
-		}
+	// User exist
+	if deletedAt == nil && !errors.Is(err, client_error.ErrUserNotFound) {
+		logger.Debug(ctx, "User exist")
+		return client_error.ErrUserExists
+	}
+
+	if deletedAt != nil {
 		logger.Debug(ctx, "User deleted: start restore")
+	} else if errors.Is(err, client_error.ErrUserNotFound) {
+		logger.Debug(ctx, "Registration start")
 	}
 
 	// Set code to store
 	code := helpers.GenerateRandomCode(validation_rules.LenRegistrationCode)
 	ctx = logger.WithConfirmationCode(ctx, code)
-
 	logger.Debug(ctx, "Code sent")
 
 	err = ra.codes.SetCode(
@@ -110,38 +112,34 @@ func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAd
 		return err
 	}
 
-	// Check has user or not
-	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	deletedAt, err := ra.service.GetUserDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	// DB error
 	if err != nil && !errors.Is(err, client_error.ErrUserNotFound) {
 		return err
 	}
 
-	if dbUser != nil {
-		// If user deleted restore
-		if dbUser.Deleted() {
-			logger.Debug(ctx, "User deleted: restored")
-			err = ra.service.RestoreUser(ctx, data)
-			return err
-		}
+	// User exist
+	if deletedAt == nil && !errors.Is(err, client_error.ErrUserNotFound) {
 		logger.Debug(ctx, "User exist")
 		return client_error.ErrUserExists
 	}
 
-	// Add user
-	err = ra.service.AddUser(ctx, data)
+	if deletedAt != nil {
+		logger.Debug(ctx, "User deleted: restored")
+		err = ra.service.RestoreUser(ctx, data)
+	} else if errors.Is(err, client_error.ErrUserNotFound) {
+		logger.Debug(ctx, "Registration confirm")
+		err = ra.service.AddUser(ctx, data)
+	}
+
 	return err
 }
 
 func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotPassword) error {
 	// Check has user or not
-	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	_, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	if err != nil {
 		return err
-	}
-
-	if dbUser.Deleted() {
-		logger.Debug(ctx, "User deleted")
-		return client_error.ErrUserDeleted
 	}
 
 	// Set code to store
@@ -171,14 +169,9 @@ func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.User
 	}
 
 	// Check has user or not
-	dbUser, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	_, err = ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	if err != nil {
 		return err
-	}
-
-	if dbUser.Deleted() {
-		logger.Debug(ctx, "User deleted")
-		return client_error.ErrUserDeleted
 	}
 
 	err = ra.service.UpdatePasswordUser(ctx, data)

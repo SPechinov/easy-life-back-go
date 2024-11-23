@@ -12,10 +12,6 @@ type User struct {
 	DeletedAt *string
 }
 
-func (u User) Deleted() bool {
-	return u.DeletedAt != nil
-}
-
 type UserGet struct {
 	ID    string
 	Email string

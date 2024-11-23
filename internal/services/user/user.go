@@ -5,6 +5,7 @@ import (
 	"go-clean/internal/entities"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
+	"time"
 )
 
 type database interface {
@@ -12,6 +13,7 @@ type database interface {
 	RestoreUser(ctx context.Context, data entities.UserAddConfirm) error
 	GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error)
 	UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error
+	GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error)
 }
 
 type User struct {
@@ -60,6 +62,10 @@ func (u *User) RestoreUser(ctx context.Context, data entities.UserAddConfirm) er
 func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error) {
 	user, err := u.database.GetUser(ctx, data)
 	return user, err
+}
+
+func (u *User) GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error) {
+	return u.database.GetUserDeletedTime(ctx, entity)
 }
 
 func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error {

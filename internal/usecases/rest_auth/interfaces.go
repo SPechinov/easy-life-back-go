@@ -25,4 +25,5 @@ type service interface {
 	GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error)
 	RestoreUser(ctx context.Context, data entities.UserAddConfirm) error
 	UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error
+	GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error)
 }

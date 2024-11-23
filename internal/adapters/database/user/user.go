@@ -60,21 +60,6 @@ func (u *User) AddUser(ctx context.Context, data entities.UserAddConfirm) error 
 	return nil
 }
 
-func (u *User) RestoreUser(ctx context.Context, data entities.UserAddConfirm) error {
-	ad := getAuthData(data.AuthWay)
-
-	query := `UPDATE public.users SET first_name = $1, password = $2, deleted_at = null WHERE email = $3 OR phone = $4`
-
-	_, err := u.postgres.Exec(ctx, query, data.FirstName, data.Password, ad.email, ad.phone)
-
-	if err != nil {
-		logger.Error(ctx, err)
-		return err
-	}
-
-	return nil
-}
-
 func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error) {
 	if data.ID == "" && data.Email == "" && data.Phone == "" {
 		return nil, client_error.ErrUserNotFound
@@ -84,7 +69,11 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 	var userData dataUser
 	var err error
 	if data.ID == "" {
-		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM public.users WHERE email = $1 OR phone = $2`
+		query := `
+			SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at
+			FROM public.users
+			WHERE email = $1 OR phone = $2 AND deleted_at IS NULL
+		`
 		err = u.postgres.QueryRow(ctx, query, data.Email, data.Phone).Scan(
 			&userData.ID,
 			&userData.Email,
@@ -97,7 +86,11 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 			&userData.DeletedAt,
 		)
 	} else {
-		query := `SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at FROM public.users WHERE id = $1`
+		query := `
+			SELECT id, email, phone, password, first_name, last_name, created_at, updated_at, deleted_at 
+			FROM public.users
+			WHERE id = $1 AND deleted_at IS NULL
+		`
 		err = u.postgres.QueryRow(ctx, query, data.ID).Scan(
 			&userData.ID,
 			&userData.Email,
@@ -146,7 +139,11 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
-	query := `UPDATE public.users SET password = $1 WHERE email = $2 OR phone = $3`
+	query := `
+		UPDATE public.users 
+		SET password = $1
+		WHERE email = $2 OR phone = $3 AND deleted_at IS NULL
+	`
 
 	_, err := u.postgres.Exec(ctx, query, data.Password, ad.email, ad.phone)
 
@@ -154,6 +151,62 @@ func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotP
 		if errors.Is(err, pgx.ErrNoRows) {
 			return client_error.ErrUserNotFound
 		}
+		logger.Error(ctx, err)
+		return err
+	}
+
+	return nil
+}
+
+// For deleted user
+
+func (u *User) GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error) {
+	if entity.ID == "" && entity.Email == "" && entity.Phone == "" {
+		return nil, client_error.ErrUserNotFound
+	}
+
+	var deletedAt *time.Time
+	var err error
+
+	if entity.ID == "" {
+		query := `
+			SELECT deleted_at
+			FROM public.users
+			WHERE email = $1 OR phone = $2
+		`
+		err = u.postgres.QueryRow(ctx, query, entity.Email, entity.Phone).Scan(&deletedAt)
+	} else {
+		query := `
+            SELECT deleted_at
+            FROM public.users
+            WHERE id = $1
+        `
+		err = u.postgres.QueryRow(ctx, query, entity.ID).Scan(&deletedAt)
+	}
+
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, client_error.ErrUserNotFound
+		}
+		logger.Error(ctx, err)
+		return nil, err
+	}
+
+	return deletedAt, nil
+}
+
+func (u *User) RestoreUser(ctx context.Context, data entities.UserAddConfirm) error {
+	ad := getAuthData(data.AuthWay)
+
+	query := `
+		UPDATE public.users 
+		SET first_name = $1, password = $2, deleted_at = null 
+		WHERE email = $3 OR phone = $4 AND deleted_at IS NOT NULL
+	`
+
+	_, err := u.postgres.Exec(ctx, query, data.FirstName, data.Password, ad.email, ad.phone)
+
+	if err != nil {
 		logger.Error(ctx, err)
 		return err
 	}
