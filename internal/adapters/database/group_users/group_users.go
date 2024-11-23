@@ -38,10 +38,11 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
    			public.users.updated_at,
    			public.users.deleted_at
 		FROM public.groups_users
-		
+
 		LEFT JOIN public.users ON public.users.id = public.groups_users.user_id
+		LEFT JOIN public.groups ON public.groups.id = public.groups_users.group_id
 		
-		WHERE public.groups_users.group_id = $1
+		WHERE public.groups_users.group_id = $1 AND public.groups.deleted_at IS NULL
 		
 	`
 
@@ -73,33 +74,64 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
 			return nil, err
 		}
 
-		users = append(users, entities.GroupUser{
-			ID:         user.id,
-			Email:      helpers.GetValueFromSQLNullString(user.email),
-			Phone:      helpers.GetValueFromSQLNullString(user.phone),
-			FirstName:  user.firstName,
-			LastName:   helpers.GetPtrValueFromSQLNullString(user.lastName),
-			Permission: user.permission,
-			CreatedAt:  user.createdAt.Format(time.RFC3339),
-			UpdatedAt:  user.updatedAt.Format(time.RFC3339),
-			DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
-			InvitedAt:  user.invitedAt.Format(time.RFC3339),
-		})
+		if user.deletedAt.Valid {
+			users = append(
+				users,
+				entities.GroupUser{
+					ID:        user.id,
+					DeletedAt: helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
+				},
+			)
+		} else {
+			users = append(
+				users,
+				entities.GroupUser{
+					ID:         user.id,
+					Email:      helpers.GetValueFromSQLNullString(user.email),
+					Phone:      helpers.GetValueFromSQLNullString(user.phone),
+					FirstName:  user.firstName,
+					LastName:   helpers.GetPtrValueFromSQLNullString(user.lastName),
+					Permission: user.permission,
+					CreatedAt:  user.createdAt.Format(time.RFC3339),
+					UpdatedAt:  user.updatedAt.Format(time.RFC3339),
+					DeletedAt:  helpers.GetPtrValueFromSQLNullTime(user.deletedAt, time.RFC3339),
+					InvitedAt:  user.invitedAt.Format(time.RFC3339),
+				},
+			)
+		}
+
 	}
 
 	return users, nil
 }
 
 func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
-	query :=
-		`
-			INSERT INTO public.groups_users (group_id, user_id, permission)
-			VALUES ($1, $2, 0)
-		`
+	query := `
+		WITH 
+			-- find group
+			valid_group AS (
+        	    SELECT id
+        	    FROM public.groups
+        	    WHERE id = $1 AND deleted_at IS NULL
+        	),
+			-- find user
+			valid_user AS (
+			    SELECT id
+			    FROM public.users
+			    WHERE id = $2 AND deleted_at IS NULL
+			)
+		-- add user in group
+		INSERT INTO public.groups_users (group_id, user_id, permission)
+		SELECT valid_group.id, valid_user.id, 0
+		FROM valid_group CROSS JOIN valid_user
+	`
 
-	_, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID)
+	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID)
 	if err != nil {
 		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			return client_error.ErrUserNotFound
+		}
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 			return client_error.ErrUserInvited
 		}
@@ -108,19 +140,33 @@ func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInvit
 		return err
 	}
 
+	if res.RowsAffected() == 0 {
+		return client_error.ErrUserNotFound
+	}
+
 	return nil
 }
 
 func (gu *GroupUsers) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
-	query :=
-		`
-			DELETE FROM public.groups_users WHERE group_id = $1 AND user_id = $2 AND permission != $3
-		`
+	query := `
+		DELETE FROM public.groups_users
+		USING public.groups
+		WHERE 
+			public.groups_users.group_id = $1 
+			AND public.groups_users.user_id = $2 
+			AND public.groups_users.permission != $3
+			AND public.groups.id = public.groups_users.group_id
+			AND public.groups.deleted_at IS NULL
+	`
 
-	_, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)
+	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.UserID, constants.DefaultAdminPermission)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return client_error.ErrUserNotFound
 	}
 
 	return nil
