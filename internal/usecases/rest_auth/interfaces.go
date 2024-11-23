@@ -13,17 +13,17 @@ type codes interface {
 	DeleteCode(ctx context.Context, key string) error
 }
 
-type store interface {
+type restAuthStore interface {
 	SetSession(ctx context.Context, userID, sessionID, refreshJWT string) error
 	GetSession(ctx context.Context, userID, sessionID string) (string, error)
 	DeleteSession(ctx context.Context, userID, sessionID string)
 	DeleteAllSessions(ctx context.Context, userID string)
 }
 
-type service interface {
-	AddUser(ctx context.Context, data entities.UserAddConfirm) error
-	GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error)
-	RestoreUser(ctx context.Context, data entities.UserAddConfirm) error
-	UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error
-	GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error)
+type usersService interface {
+	Add(ctx context.Context, data entities.UserAddConfirm) error
+	Get(ctx context.Context, data entities.UserGet) (*entities.User, error)
+	Restore(ctx context.Context, data entities.UserAddConfirm) error
+	UpdatePassword(ctx context.Context, data entities.UserForgotPasswordConfirm) error
+	GetDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error)
 }

@@ -23,14 +23,14 @@ func getKeyUserForgotPasswordCode(key string) string {
 }
 
 type RestAuth struct {
-	store   store
-	codes   codes
-	service service
-	cfg     *config.Config
+	restAuthStore restAuthStore
+	codes         codes
+	usersService  usersService
+	cfg           *config.Config
 }
 
-func New(cfg *config.Config, store store, service service, codes codes) RestAuth {
-	return RestAuth{cfg: cfg, store: store, service: service, codes: codes}
+func New(cfg *config.Config, restAuthStore restAuthStore, service usersService, codes codes) RestAuth {
+	return RestAuth{cfg: cfg, restAuthStore: restAuthStore, usersService: service, codes: codes}
 }
 
 func generateSessionID() string {
@@ -39,7 +39,7 @@ func generateSessionID() string {
 
 func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionID, accessJWT, refreshJWT string, err error) {
 	// Check user
-	user, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	user, err := ra.usersService.Get(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	if err != nil {
 		return "", "", "", err
 	}
@@ -59,7 +59,7 @@ func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionI
 	}
 	sessionID = generateSessionID()
 
-	err = ra.store.SetSession(ctx, userID, sessionID, refreshJWT)
+	err = ra.restAuthStore.SetSession(ctx, userID, sessionID, refreshJWT)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -68,7 +68,7 @@ func (ra RestAuth) Login(ctx context.Context, data entities.UserLogin) (sessionI
 }
 
 func (ra RestAuth) Registration(ctx context.Context, data entities.UserAdd) error {
-	deletedAt, err := ra.service.GetUserDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	deletedAt, err := ra.usersService.GetDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	// DB error
 	if err != nil && !errors.Is(err, client_error.ErrUserNotFound) {
 		return err
@@ -112,7 +112,7 @@ func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAd
 		return err
 	}
 
-	deletedAt, err := ra.service.GetUserDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	deletedAt, err := ra.usersService.GetDeletedTime(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	// DB error
 	if err != nil && !errors.Is(err, client_error.ErrUserNotFound) {
 		return err
@@ -126,10 +126,10 @@ func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAd
 
 	if deletedAt != nil {
 		logger.Debug(ctx, "User deleted: restored")
-		err = ra.service.RestoreUser(ctx, data)
+		err = ra.usersService.Restore(ctx, data)
 	} else if errors.Is(err, client_error.ErrUserNotFound) {
 		logger.Debug(ctx, "Registration confirm")
-		err = ra.service.AddUser(ctx, data)
+		err = ra.usersService.Add(ctx, data)
 	}
 
 	return err
@@ -137,7 +137,7 @@ func (ra RestAuth) RegistrationConfirm(ctx context.Context, data entities.UserAd
 
 func (ra RestAuth) ForgotPassword(ctx context.Context, data entities.UserForgotPassword) error {
 	// Check has user or not
-	_, err := ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	_, err := ra.usersService.Get(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	if err != nil {
 		return err
 	}
@@ -169,27 +169,27 @@ func (ra RestAuth) ForgotPasswordConfirm(ctx context.Context, data entities.User
 	}
 
 	// Check has user or not
-	_, err = ra.service.GetUser(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
+	_, err = ra.usersService.Get(ctx, entities.UserGet{Email: data.AuthWay.Email, Phone: data.AuthWay.Phone})
 	if err != nil {
 		return err
 	}
 
-	err = ra.service.UpdatePasswordUser(ctx, data)
+	err = ra.usersService.UpdatePassword(ctx, data)
 	return err
 }
 
 func (ra RestAuth) UpdateJWT(ctx context.Context, entity entities.UserUpdateJWT) (string, string, string, error) {
 	// Check user in store
-	value, err := ra.store.GetSession(ctx, entity.ID, entity.SessionID)
+	value, err := ra.restAuthStore.GetSession(ctx, entity.ID, entity.SessionID)
 	if err != nil || value != entity.RefreshJWT {
 		logger.Warn(ctx, "refreshJWT has not in redis")
 
-		go ra.store.DeleteAllSessions(ctx, entity.ID)
+		go ra.restAuthStore.DeleteAllSessions(ctx, entity.ID)
 		return "", "", "", client_error.ErrNotAuthorized
 	}
 
 	// Check user in DB
-	user, err := ra.service.GetUser(ctx, entities.UserGet{ID: entity.ID})
+	user, err := ra.usersService.Get(ctx, entities.UserGet{ID: entity.ID})
 	if err != nil || user == nil {
 		logger.Warn(ctx, "user has not got in DB")
 		return "", "", "", client_error.ErrNotAuthorized
@@ -203,7 +203,7 @@ func (ra RestAuth) UpdateJWT(ctx context.Context, entity entities.UserUpdateJWT)
 	}
 
 	// Delete old session
-	go ra.store.DeleteSession(ctx, entity.ID, entity.SessionID)
+	go ra.restAuthStore.DeleteSession(ctx, entity.ID, entity.SessionID)
 
 	// Create JWTs
 	jwtData := ra.createJWTData(entity.ID)
@@ -214,7 +214,7 @@ func (ra RestAuth) UpdateJWT(ctx context.Context, entity entities.UserUpdateJWT)
 	newSessionID := generateSessionID()
 
 	// Set new session
-	err = ra.store.SetSession(ctx, entity.ID, newSessionID, newRefreshJWT)
+	err = ra.restAuthStore.SetSession(ctx, entity.ID, newSessionID, newRefreshJWT)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -223,11 +223,11 @@ func (ra RestAuth) UpdateJWT(ctx context.Context, entity entities.UserUpdateJWT)
 }
 
 func (ra RestAuth) Logout(ctx context.Context, entity entities.UserLogout) {
-	go ra.store.DeleteSession(ctx, entity.ID, entity.SessionID)
+	go ra.restAuthStore.DeleteSession(ctx, entity.ID, entity.SessionID)
 	return
 }
 
 func (ra RestAuth) LogoutAll(ctx context.Context, entity entities.UserLogoutAll) {
-	go ra.store.DeleteAllSessions(ctx, entity.ID)
+	go ra.restAuthStore.DeleteAllSessions(ctx, entity.ID)
 	return
 }

@@ -1,4 +1,4 @@
-package user
+package users
 
 import (
 	"context"
@@ -11,12 +11,12 @@ import (
 	"time"
 )
 
-type User struct {
+type Users struct {
 	postgres postgres.Client
 }
 
-func New(postgres postgres.Client) *User {
-	return &User{
+func New(postgres postgres.Client) *Users {
+	return &Users{
 		postgres: postgres,
 	}
 }
@@ -43,7 +43,7 @@ func getAuthData(authWay entities.UserAuthWay) authData {
 	}
 }
 
-func (u *User) AddUser(ctx context.Context, data entities.UserAddConfirm) error {
+func (u *Users) Add(ctx context.Context, data entities.UserAddConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
 	query := `
@@ -60,7 +60,7 @@ func (u *User) AddUser(ctx context.Context, data entities.UserAddConfirm) error 
 	return nil
 }
 
-func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.User, error) {
+func (u *Users) Get(ctx context.Context, data entities.UserGet) (*entities.User, error) {
 	if data.ID == "" && data.Email == "" && data.Phone == "" {
 		return nil, client_error.ErrUserNotFound
 	}
@@ -136,7 +136,7 @@ func (u *User) GetUser(ctx context.Context, data entities.UserGet) (*entities.Us
 	return user, nil
 }
 
-func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
+func (u *Users) UpdatePassword(ctx context.Context, data entities.UserForgotPasswordConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
 	query := `
@@ -160,7 +160,7 @@ func (u *User) UpdatePasswordUser(ctx context.Context, data entities.UserForgotP
 
 // For deleted user
 
-func (u *User) GetUserDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error) {
+func (u *Users) GetDeletedTime(ctx context.Context, entity entities.UserGet) (*time.Time, error) {
 	if entity.ID == "" && entity.Email == "" && entity.Phone == "" {
 		return nil, client_error.ErrUserNotFound
 	}
@@ -195,7 +195,7 @@ func (u *User) GetUserDeletedTime(ctx context.Context, entity entities.UserGet) 
 	return deletedAt, nil
 }
 
-func (u *User) RestoreUser(ctx context.Context, data entities.UserAddConfirm) error {
+func (u *Users) Restore(ctx context.Context, data entities.UserAddConfirm) error {
 	ad := getAuthData(data.AuthWay)
 
 	query := `
