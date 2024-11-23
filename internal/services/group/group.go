@@ -23,23 +23,13 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 		return nil, err
 	}
 
-	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{
+	return g.groupDatabase.Get(ctx, entities.GroupGet{
 		ID: groupID,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return group, nil
 }
 
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
-	err := g.groupDatabase.Patch(ctx, entity)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return g.groupDatabase.Patch(ctx, entity)
 }
 
 func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {

@@ -34,11 +34,6 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 }
 
 func (g *Group) Patch(ctx context.Context, adminID string, entity entities.GroupPatch) error {
-	isDeletedGroup := g.groupService.IsDeletedGroup(ctx, entity.ID)
-	if isDeletedGroup {
-		return client_error.ErrGroupDeleted
-	}
-
 	err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
 	if err != nil {
 		return err
@@ -78,10 +73,6 @@ func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGet
 }
 
 func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
-	if g.groupService.IsDeletedGroup(ctx, groupID) {
-		return client_error.ErrGroupDeleted
-	}
-
 	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
 	if err != nil {
 		return err
@@ -101,10 +92,6 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 }
 
 func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string) error {
-	if g.groupService.IsDeletedGroup(ctx, groupID) {
-		return client_error.ErrGroupDeleted
-	}
-
 	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
 	if err != nil {
 		return err
