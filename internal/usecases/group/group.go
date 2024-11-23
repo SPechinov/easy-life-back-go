@@ -5,7 +5,6 @@ import (
 	"go-clean/config"
 	"go-clean/internal/constants/validation_rules"
 	"go-clean/internal/entities"
-	"go-clean/pkg/client_error"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
 	"time"
@@ -33,8 +32,8 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	return g.groupService.Add(ctx, entity)
 }
 
-func (g *Group) Patch(ctx context.Context, adminID string, entity entities.GroupPatch) error {
-	err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
+func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
+	err := g.groupService.IsGroupAdmin(ctx, entity.UserID, entity.ID)
 	if err != nil {
 		return err
 	}
@@ -51,29 +50,17 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 	return g.groupService.GetList(ctx, entity)
 }
 
-func (g *Group) Get(ctx context.Context, userID string, entity entities.GroupGetInfo) (*entities.Group, error) {
-	user, err := g.groupService.GetGroupUser(ctx, userID, entity.ID)
-	if user == nil && err == nil {
-		return nil, client_error.ErrUserNotInGroup
-	}
+func (g *Group) Get(ctx context.Context, entity entities.GroupGetInfo) (*entities.Group, error) {
+	err := g.groupService.IsGroupUser(ctx, entity.UserID, entity.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	group, err := g.groupService.Get(ctx, entity)
-	if err != nil {
-		return nil, err
-	}
-
-	if group.Deleted() {
-		return nil, client_error.ErrGroupDeleted
-	}
-
-	return group, nil
+	return g.groupService.Get(ctx, entity)
 }
 
-func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
-	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
+func (g *Group) Delete(ctx context.Context, entity entities.GroupDelete) error {
+	err := g.groupService.IsGroupAdmin(ctx, entity.UserID, entity.ID)
 	if err != nil {
 		return err
 	}
@@ -83,7 +70,7 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
-	err = g.codes.SetCode(ctx, getKeyDeleteGroup(groupID), code, 0, time.Minute*10)
+	err = g.codes.SetCode(ctx, getKeyDeleteGroup(entity.ID), code, 0, time.Minute*10)
 	if err != nil {
 		return err
 	}
@@ -91,19 +78,16 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	return nil
 }
 
-func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string) error {
-	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
+func (g *Group) DeleteConfirm(ctx context.Context, entity entities.GroupDeleteConfirm) error {
+	err := g.groupService.IsGroupAdmin(ctx, entity.UserID, entity.ID)
 	if err != nil {
 		return err
 	}
 
-	err = g.codes.CompareCodes(ctx, getKeyDeleteGroup(groupID), code)
+	err = g.codes.CompareCodes(ctx, getKeyDeleteGroup(entity.ID), entity.Code)
 	if err != nil {
 		return err
 	}
 
-	return g.groupService.Patch(ctx, entities.GroupPatch{
-		ID:     groupID,
-		Delete: helpers.BoolToPtr(true),
-	})
+	return g.groupService.Delete(ctx, entity)
 }

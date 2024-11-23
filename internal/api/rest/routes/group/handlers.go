@@ -45,8 +45,10 @@ func (controller *restGroupController) handlerGetGroup(echoCTX echo.Context, ctx
 
 	groupInfo, err := controller.useCases.Get(
 		ctx,
-		userID,
-		entities.GroupGetInfo{ID: groupID},
+		entities.GroupGetInfo{
+			ID:     groupID,
+			UserID: userID,
+		},
 	)
 	if err != nil {
 		return err
@@ -59,10 +61,10 @@ func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, c
 	groupID := echoCTX.Param("groupID")
 	err := controller.useCases.Patch(
 		ctx,
-		userID,
 		entities.GroupPatch{
-			ID:   groupID,
-			Name: dto.Name,
+			ID:     groupID,
+			UserID: userID,
+			Name:   dto.Name,
 		},
 	)
 	if err != nil {
@@ -76,7 +78,13 @@ func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, c
 func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 
-	err := controller.useCases.Delete(ctx, userID, groupID)
+	err := controller.useCases.Delete(
+		ctx,
+		entities.GroupDelete{
+			ID:     userID,
+			UserID: groupID,
+		},
+	)
 	if err != nil {
 		return err
 	}
@@ -87,7 +95,14 @@ func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx c
 func (controller *restGroupController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteConfirmDTO) error {
 	groupID := echoCTX.Param("groupID")
 
-	err := controller.useCases.DeleteConfirm(ctx, userID, groupID, dto.Code)
+	err := controller.useCases.DeleteConfirm(
+		ctx,
+		entities.GroupDeleteConfirm{
+			ID:     groupID,
+			UserID: userID,
+			Code:   dto.Code,
+		},
+	)
 	if err != nil {
 		return err
 	}

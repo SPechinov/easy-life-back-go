@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"go-clean/internal/constants"
 	"go-clean/internal/entities"
+	"go-clean/pkg/client_error"
 	"go-clean/pkg/helpers"
 	"go-clean/pkg/logger"
 	"go-clean/pkg/postgres"
@@ -22,11 +23,11 @@ func New(postgres postgres.Client) *Group {
 	}
 }
 
-func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (string, error) {
+func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
 	tx, err := g.postgres.Begin(ctx)
 	if err != nil {
 		logger.Error(ctx, err)
-		return "", err
+		return nil, err
 	}
 	defer func() {
 		_ = tx.Rollback(ctx)
@@ -35,14 +36,19 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (string, erro
 	queryAddGroup := `
 		INSERT INTO public.groups (name)
 		VALUES ($1)
-		RETURNING id
+		RETURNING id, name, created_at, updated_at
 	`
 
-	var groupID string
-	err = tx.QueryRow(ctx, queryAddGroup, entity.Name).Scan(&groupID)
+	group := new(dataGroup)
+	err = tx.QueryRow(ctx, queryAddGroup, entity.Name).Scan(
+		&group.id,
+		&group.name,
+		&group.createdAt,
+		&group.updatedAt,
+	)
 	if err != nil {
 		logger.Error(ctx, err)
-		return "", err
+		return nil, err
 	}
 
 	queryUsersGroup := `
@@ -50,30 +56,35 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (string, erro
 		VALUES ($1, $2, $3)
 	`
 
-	_, err = tx.Exec(ctx, queryUsersGroup, groupID, entity.AdminID, constants.DefaultAdminPermission)
+	_, err = tx.Exec(ctx, queryUsersGroup, group.id, entity.AdminID, constants.DefaultAdminPermission)
 	if err != nil {
 		logger.Error(ctx, err)
-		return "", err
+		return nil, err
 	}
 
 	if err = tx.Commit(ctx); err != nil {
 		logger.Error(ctx, err)
-		return "", err
+		return nil, err
 	}
 
-	return groupID, nil
+	return &entities.Group{
+		ID:        group.id,
+		Name:      group.name,
+		IsPayed:   false,
+		CreatedAt: group.createdAt.Format(time.RFC3339),
+		UpdatedAt: group.updatedAt.Format(time.RFC3339),
+		DeletedAt: nil,
+	}, nil
 }
 
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	query := `
 		UPDATE public.groups
-		SET 
-		    name = COALESCE(NULLIF($1, ''), name),
-			deleted_at = CASE WHEN $2 = true THEN CURRENT_TIMESTAMP ELSE deleted_at END
+		SET name = COALESCE(NULLIF($1, ''), name)
 		WHERE id = $3
 	`
 
-	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.Delete, entity.ID)
+	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.ID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return err
@@ -84,14 +95,9 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
 	query := `
-		SELECT
-			public.groups.id AS group_id,
-			public.groups.name AS group_name,
-			public.groups.is_payed AS group_is_payed,
-			public.groups.created_at AS group_created_at,
-			public.groups.updated_at AS group_updated_at,
-			public.groups.deleted_at AS group_deleted_at
-		FROM public.groups WHERE public.groups.id = $1
+		SELECT id, name, is_payed, created_at, updated_at, deleted_at
+		FROM public.groups
+		WHERE id = $1 AND deleted_at IS NULL
 	`
 
 	group := new(dataGroup)
@@ -118,6 +124,25 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}, nil
 }
 
+func (g *Group) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) error {
+	query := `
+		DELETE FROM public.groups
+	   	WHERE groups.id = $1 AND deleted_at IS NULL
+	`
+
+	res, err := g.postgres.Exec(ctx, query, entity.ID)
+	if err != nil {
+		logger.Error(ctx, err)
+		return err
+	}
+
+	if res.RowsAffected() == 0 {
+		return client_error.ErrGroupDeleted
+	}
+
+	return nil
+}
+
 func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	query := `
 		SELECT
@@ -128,20 +153,11 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 		    public.groups.updated_at,
 		    public.groups.deleted_at
 		FROM public.groups_users
-
-		LEFT JOIN public.groups
-			ON public.groups.id = public.groups_users.group_id
-
-		WHERE 
-		    user_id = $1 
-		  AND (
-		    ($2 = TRUE AND public.groups.deleted_at IS NOT NULL)
-			OR
-		    ($2 = FALSE AND public.groups.deleted_at IS NULL)
-		  )
+		LEFT JOIN public.groups ON public.groups.id = public.groups_users.group_id
+		WHERE public.groups_users.user_id = $1 AND public.groups.deleted_at IS NOT NULL
 	`
 
-	rows, err := g.postgres.Query(ctx, query, entity.UserID, entity.Deleted)
+	rows, err := g.postgres.Query(ctx, query, entity.UserID)
 	if err != nil {
 		logger.Error(ctx, err)
 		return nil, err
@@ -194,11 +210,12 @@ func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*enti
    			public.users.updated_at,
    			public.users.deleted_at
 		FROM public.groups_users
-
-		LEFT JOIN public.users
-			ON public.users.id = public.groups_users.user_id
-
-		WHERE  public.groups_users.user_id = $1 AND public.groups_users.group_id = $2
+		LEFT JOIN public.users ON public.users.id = public.groups_users.user_id
+		LEFT JOIN public.groups ON groups.id = public.groups_users.group_id
+		WHERE 
+			public.groups_users.user_id = $1
+	  		AND public.groups_users.group_id = $2 
+	  		AND public.groups.deleted_at IS NULL
 	`
 
 	var user dataUser

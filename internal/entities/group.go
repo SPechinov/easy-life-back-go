@@ -9,18 +9,13 @@ type Group struct {
 	DeletedAt *string
 }
 
-func (g *Group) Deleted() bool {
-	return g.DeletedAt != nil
-}
-
 type GroupFull struct {
 	Group
 	Users []GroupUser
 }
 
 type GroupsGetList struct {
-	UserID  string
-	Deleted bool
+	UserID string
 }
 
 type GroupGet struct {
@@ -28,7 +23,8 @@ type GroupGet struct {
 }
 
 type GroupGetInfo struct {
-	ID string
+	ID     string
+	UserID string
 }
 
 type GroupAdd struct {
@@ -38,10 +34,17 @@ type GroupAdd struct {
 
 type GroupPatch struct {
 	ID     string
+	UserID string
 	Name   *string
-	Delete *bool
 }
 
 type GroupDelete struct {
-	ID string
+	ID     string
+	UserID string
+}
+
+type GroupDeleteConfirm struct {
+	ID     string
+	UserID string
+	Code   string
 }

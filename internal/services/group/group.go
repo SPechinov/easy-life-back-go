@@ -18,14 +18,7 @@ func New(groupDatabase groupDatabase) *Group {
 }
 
 func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
-	groupID, err := g.groupDatabase.Add(ctx, entity)
-	if err != nil {
-		return nil, err
-	}
-
-	return g.groupDatabase.Get(ctx, entities.GroupGet{
-		ID: groupID,
-	})
+	return g.groupDatabase.Add(ctx, entity)
 }
 
 func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
@@ -37,12 +30,15 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 }
 
 func (g *Group) Get(ctx context.Context, entity entities.GroupGetInfo) (*entities.Group, error) {
-	groupInfo, err := g.groupDatabase.Get(ctx, entities.GroupGet{ID: entity.ID})
-	if err != nil {
-		return nil, err
-	}
+	return g.groupDatabase.Get(ctx, entities.GroupGet{ID: entity.ID})
+}
 
-	return groupInfo, nil
+func (g *Group) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) error {
+	return g.groupDatabase.Delete(ctx, entity)
+}
+
+func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
+	return g.groupDatabase.GetGroupUser(ctx, userID, groupID)
 }
 
 func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) error {
@@ -61,10 +57,6 @@ func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) error 
 	return nil
 }
 
-func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
-	return g.groupDatabase.GetGroupUser(ctx, userID, groupID)
-}
-
 func (g *Group) IsGroupUser(ctx context.Context, userID, groupID string) error {
 	user, err := g.GetGroupUser(ctx, userID, groupID)
 	if user == nil && err == nil {
@@ -75,13 +67,4 @@ func (g *Group) IsGroupUser(ctx context.Context, userID, groupID string) error {
 	}
 
 	return nil
-}
-
-func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
-	group, err := g.groupDatabase.Get(ctx, entities.GroupGet{ID: groupID})
-	if err != nil {
-		return true
-	}
-
-	return group.Deleted()
 }
