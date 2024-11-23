@@ -12,6 +12,6 @@ type groupUsersService interface {
 }
 
 type groupService interface {
-	IsGroupAdmin(ctx context.Context, userID, groupID string) bool
+	IsGroupAdmin(ctx context.Context, userID, groupID string) error
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
 }

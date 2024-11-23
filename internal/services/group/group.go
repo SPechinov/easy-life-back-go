@@ -55,13 +55,20 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGetInfo) (*entitie
 	return groupInfo, nil
 }
 
-func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) bool {
+func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) error {
 	user, err := g.groupDatabase.GetGroupUser(ctx, userID, groupID)
-	if err != nil || user == nil {
-		return false
+	if user == nil && err == nil {
+		return client_error.ErrUserNotInGroup
+	}
+	if err != nil {
+		return err
 	}
 
-	return user.Permission == constants.DefaultAdminPermission
+	if user.Permission != constants.DefaultAdminPermission {
+		return client_error.ErrUserNotAdminGroup
+	}
+
+	return nil
 }
 
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {

@@ -39,12 +39,12 @@ func (g *Group) Patch(ctx context.Context, adminID string, entity entities.Group
 		return client_error.ErrGroupDeleted
 	}
 
-	isAdmin := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
-	if !isAdmin {
-		return client_error.ErrUserNotAdminGroup
+	err := g.groupService.IsGroupAdmin(ctx, adminID, entity.ID)
+	if err != nil {
+		return err
 	}
 
-	err := g.groupService.Patch(ctx, entity)
+	err = g.groupService.Patch(ctx, entity)
 	if err != nil {
 		return err
 	}
@@ -81,8 +81,10 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	if g.groupService.IsDeletedGroup(ctx, groupID) {
 		return client_error.ErrGroupDeleted
 	}
-	if !g.groupService.IsGroupAdmin(ctx, adminID, groupID) {
-		return client_error.ErrUserNotAdminGroup
+
+	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
+	if err != nil {
+		return err
 	}
 
 	// Set code to store
@@ -90,7 +92,7 @@ func (g *Group) Delete(ctx context.Context, adminID, groupID string) error {
 	ctx = logger.WithConfirmationCode(ctx, code)
 	logger.Debug(ctx, "Code sent")
 
-	err := g.codes.SetCode(ctx, getKeyDeleteGroup(groupID), code, 0, time.Minute*10)
+	err = g.codes.SetCode(ctx, getKeyDeleteGroup(groupID), code, 0, time.Minute*10)
 	if err != nil {
 		return err
 	}
@@ -102,11 +104,13 @@ func (g *Group) DeleteConfirm(ctx context.Context, adminID, groupID, code string
 	if g.groupService.IsDeletedGroup(ctx, groupID) {
 		return client_error.ErrGroupDeleted
 	}
-	if !g.groupService.IsGroupAdmin(ctx, adminID, groupID) {
-		return client_error.ErrUserNotAdminGroup
+
+	err := g.groupService.IsGroupAdmin(ctx, adminID, groupID)
+	if err != nil {
+		return err
 	}
 
-	err := g.codes.CompareCodes(ctx, getKeyDeleteGroup(groupID), code)
+	err = g.codes.CompareCodes(ctx, getKeyDeleteGroup(groupID), code)
 	if err != nil {
 		return err
 	}

@@ -31,15 +31,17 @@ func (gu *GroupUsers) GetList(ctx context.Context, userID string, entity entitie
 }
 
 func (gu *GroupUsers) Invite(ctx context.Context, adminID string, entity entities.GroupInviteUser) error {
-	if !gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID) {
-		return client_error.ErrUserNotAdminGroup
+	err := gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
+	if err != nil {
+		return err
 	}
 	return gu.groupUsersService.InviteUser(ctx, entity)
 }
 
 func (gu *GroupUsers) Exclude(ctx context.Context, adminID string, entity entities.GroupExcludeUser) error {
-	if !gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID) {
-		return client_error.ErrUserNotAdminGroup
+	err := gu.groupService.IsGroupAdmin(ctx, adminID, entity.GroupID)
+	if err != nil {
+		return err
 	}
 	return gu.groupUsersService.ExcludeUser(ctx, entity)
 }
