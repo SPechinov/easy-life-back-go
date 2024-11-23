@@ -3,6 +3,7 @@ package group_notes
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"go-clean/internal/api/rest"
 	"go-clean/internal/entities"
 	"net/http"
 )
@@ -20,7 +21,7 @@ func (controller *restGroupNotesController) GetList(echoCTX echo.Context, ctx co
 		return err
 	}
 
-	return echoCTX.JSON(http.StatusOK, list)
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(list))
 }
 
 func (controller *restGroupNotesController) Get(echoCTX echo.Context, ctx context.Context, userID string) error {
@@ -39,13 +40,13 @@ func (controller *restGroupNotesController) Get(echoCTX echo.Context, ctx contex
 		return err
 	}
 
-	return echoCTX.JSON(http.StatusOK, list)
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(list))
 }
 
 func (controller *restGroupNotesController) Add(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
 	groupID := echoCTX.Param("groupID")
 
-	err := controller.useCases.Add(
+	group, err := controller.useCases.Add(
 		ctx,
 		&entities.NoteAdd{
 			UserID:      userID,
@@ -58,7 +59,7 @@ func (controller *restGroupNotesController) Add(echoCTX echo.Context, ctx contex
 		return err
 	}
 
-	return echoCTX.NoContent(http.StatusNoContent)
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
 func (controller *restGroupNotesController) Patch(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {

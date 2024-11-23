@@ -3,6 +3,7 @@ package group_users
 import (
 	"context"
 	"github.com/labstack/echo/v4"
+	"go-clean/internal/api/rest"
 	"go-clean/internal/entities"
 	"net/http"
 )
@@ -19,7 +20,7 @@ func (controller *restGroupUsersController) handlerGetList(echoCTX echo.Context,
 	if err != nil {
 		return err
 	}
-	return echoCTX.JSON(http.StatusOK, list)
+	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(list))
 }
 
 func (controller *restGroupUsersController) handlerInviteUserInGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *InviteUserDTO) error {

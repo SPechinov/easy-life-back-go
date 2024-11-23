@@ -37,10 +37,10 @@ func (gn *GroupNotes) Get(ctx context.Context, entity *entities.NoteGet) (*entit
 	return gn.groupNotesService.Get(ctx, entity)
 }
 
-func (gn *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) error {
+func (gn *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) (*entities.Note, error) {
 	err := gn.groupsService.IsGroupUser(ctx, entity.UserID, entity.GroupID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	return gn.groupNotesService.Add(ctx, entity)

@@ -23,7 +23,7 @@ func (gn *GroupNotes) Get(ctx context.Context, entity *entities.NoteGet) (*entit
 	return gn.groupNotesDatabase.Get(ctx, entity)
 }
 
-func (gn *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) error {
+func (gn *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) (*entities.Note, error) {
 	return gn.groupNotesDatabase.Add(ctx, entity)
 }
 

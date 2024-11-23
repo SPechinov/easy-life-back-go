@@ -23,8 +23,8 @@ func (g *GroupNotes) Get(ctx context.Context, entity *entities.NoteGet) (*entiti
 	return nil, nil
 }
 
-func (g *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) error {
-	return nil
+func (g *GroupNotes) Add(ctx context.Context, entity *entities.NoteAdd) (*entities.Note, error) {
+	return nil, nil
 }
 
 func (g *GroupNotes) Patch(ctx context.Context, entity *entities.NotePatch) error {

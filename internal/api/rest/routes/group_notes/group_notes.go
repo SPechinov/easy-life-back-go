@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	urlGroupNotesList = "/notes"
-	urlGroupAdd       = "/notes"
-	urlGroupNote      = "/notes/:noteID"
-	urlGroupPatch     = "/notes/:noteID"
-	urlGroupDelete    = "/notes/:noteID"
+	urlGroupNotesList = ""
+	urlGroupAdd       = ""
+	urlGroupNote      = "/:noteID"
+	urlGroupPatch     = "/:noteID"
+	urlGroupDelete    = "/:noteID"
 )
 
 type restGroupNotesController struct {
@@ -47,12 +47,12 @@ func (controller *restGroupNotesController) Register(group *echo.Group) {
 		controllers.NewControllerUserIDValidation(controller.Add, validateAddDTO).Register,
 	)
 
-	router.POST(
+	router.PATCH(
 		urlGroupPatch,
 		controllers.NewControllerUserIDValidation(controller.Patch, validatePatchDTO).Register,
 	)
 
-	router.POST(
+	router.DELETE(
 		urlGroupDelete,
 		controllers.NewControllerUserID(controller.Delete).Register,
 	)
