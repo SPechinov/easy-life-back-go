@@ -126,7 +126,8 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 
 func (g *Group) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) error {
 	query := `
-		DELETE FROM public.groups
+		UPDATE public.groups
+		SET deleted_at = NOW()
 	   	WHERE groups.id = $1 AND deleted_at IS NULL
 	`
 
@@ -154,7 +155,7 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 		    public.groups.deleted_at
 		FROM public.groups_users
 		LEFT JOIN public.groups ON public.groups.id = public.groups_users.group_id
-		WHERE public.groups_users.user_id = $1 AND public.groups.deleted_at IS NOT NULL
+		WHERE public.groups_users.user_id = $1 AND public.groups.deleted_at IS NULL
 	`
 
 	rows, err := g.postgres.Query(ctx, query, entity.UserID)

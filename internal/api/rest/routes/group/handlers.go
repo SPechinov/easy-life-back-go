@@ -81,8 +81,8 @@ func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx c
 	err := controller.useCases.Delete(
 		ctx,
 		entities.GroupDelete{
-			ID:     userID,
-			UserID: groupID,
+			ID:     groupID,
+			UserID: userID,
 		},
 	)
 	if err != nil {

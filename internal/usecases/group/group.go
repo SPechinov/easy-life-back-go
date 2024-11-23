@@ -2,6 +2,7 @@ package group
 
 import (
 	"context"
+	"fmt"
 	"go-clean/config"
 	"go-clean/internal/constants/validation_rules"
 	"go-clean/internal/entities"
@@ -62,6 +63,8 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGetInfo) (*entitie
 func (g *Group) Delete(ctx context.Context, entity entities.GroupDelete) error {
 	err := g.groupService.IsGroupAdmin(ctx, entity.UserID, entity.ID)
 	if err != nil {
+		fmt.Println("entity.ID: ", entity.ID)
+		fmt.Println("entity.UserID: ", entity.UserID)
 		return err
 	}
 
