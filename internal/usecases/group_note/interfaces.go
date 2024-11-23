@@ -12,11 +12,9 @@ type groupNoteService interface {
 	Patch(ctx context.Context, entity *entities.NotePatch) error
 	Delete(ctx context.Context, entity *entities.NoteDelete) error
 	IsCreator(ctx context.Context, userID, noteID string) bool
-	IsDeleted(ctx context.Context, noteID string) bool
 }
 
 type groupService interface {
-	IsDeletedGroup(ctx context.Context, groupID string) bool
-	IsGroupAdmin(ctx context.Context, userID, groupID string) bool
 	GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error)
+	IsGroupUser(ctx context.Context, userID, groupID string) error
 }

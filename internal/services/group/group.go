@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-clean/internal/constants"
 	"go-clean/internal/entities"
+	"go-clean/pkg/client_error"
 )
 
 type Group struct {
@@ -65,6 +66,18 @@ func (g *Group) IsGroupAdmin(ctx context.Context, userID, groupID string) bool {
 
 func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
 	return g.groupDatabase.GetGroupUser(ctx, userID, groupID)
+}
+
+func (g *Group) IsGroupUser(ctx context.Context, userID, groupID string) error {
+	user, err := g.GetGroupUser(ctx, userID, groupID)
+	if user == nil && err == nil {
+		return client_error.ErrUserNotInGroup
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *Group) IsDeletedGroup(ctx context.Context, groupID string) bool {
