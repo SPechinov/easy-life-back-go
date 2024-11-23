@@ -1,4 +1,4 @@
-package group
+package groups
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func (controller *restGroupController) handlerGetGroupsList(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupsController) handlerGetGroupsList(echoCTX echo.Context, ctx context.Context, userID string) error {
 	group, err := controller.useCases.GetList(
 		ctx,
 		entities.GroupsGetList{UserID: userID},
@@ -21,7 +21,7 @@ func (controller *restGroupController) handlerGetGroupsList(echoCTX echo.Context
 	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerAddGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
+func (controller *restGroupsController) handlerAddGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *AddDTO) error {
 	ctx = logger.WithGroupName(ctx, dto.Name)
 
 	group, err := controller.useCases.Add(
@@ -40,7 +40,7 @@ func (controller *restGroupController) handlerAddGroup(echoCTX echo.Context, ctx
 	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(group))
 }
 
-func (controller *restGroupController) handlerGetGroup(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupsController) handlerGetGroup(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 
 	groupInfo, err := controller.useCases.Get(
@@ -57,7 +57,7 @@ func (controller *restGroupController) handlerGetGroup(echoCTX echo.Context, ctx
 	return echoCTX.JSON(http.StatusOK, rest.NewResponseSuccess(groupInfo))
 }
 
-func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
+func (controller *restGroupsController) handlerPatchGroup(echoCTX echo.Context, ctx context.Context, userID string, dto *PatchDTO) error {
 	groupID := echoCTX.Param("groupID")
 	err := controller.useCases.Patch(
 		ctx,
@@ -75,7 +75,7 @@ func (controller *restGroupController) handlerPatchGroup(echoCTX echo.Context, c
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx context.Context, userID string) error {
+func (controller *restGroupsController) handlerDelete(echoCTX echo.Context, ctx context.Context, userID string) error {
 	groupID := echoCTX.Param("groupID")
 
 	err := controller.useCases.Delete(
@@ -92,7 +92,7 @@ func (controller *restGroupController) handlerDelete(echoCTX echo.Context, ctx c
 	return echoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restGroupController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteConfirmDTO) error {
+func (controller *restGroupsController) handlerDeleteConfirm(echoCTX echo.Context, ctx context.Context, userID string, dto *DeleteConfirmDTO) error {
 	groupID := echoCTX.Param("groupID")
 
 	err := controller.useCases.DeleteConfirm(

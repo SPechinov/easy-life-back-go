@@ -76,7 +76,7 @@ func main() {
 
 	composites.NewRestAuth(cfg, router, store, db)
 	composites.NewRestUser(cfg, router, store, db)
-	composites.NewGroup(cfg, router, store, db)
+	composites.NewGroups(cfg, router, store, db)
 	composites.NewGroupUsers(cfg, router, store, db)
 	composites.NewGroupNote(cfg, router, store, db)
 

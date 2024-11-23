@@ -1,11 +1,11 @@
-package group
+package groups
 
 import (
 	"context"
 	"go-clean/internal/entities"
 )
 
-type groupDatabase interface {
+type groupsDatabase interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error)

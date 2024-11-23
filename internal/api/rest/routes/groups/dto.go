@@ -1,4 +1,4 @@
-package group
+package groups
 
 type AddDTO struct {
 	Name string `json:"name" form:"name"`

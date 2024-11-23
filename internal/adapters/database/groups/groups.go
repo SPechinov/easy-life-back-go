@@ -1,4 +1,4 @@
-package group
+package groups
 
 import (
 	"context"
@@ -13,17 +13,17 @@ import (
 	"time"
 )
 
-type Group struct {
+type Groups struct {
 	postgres postgres.Client
 }
 
-func New(postgres postgres.Client) *Group {
-	return &Group{
+func New(postgres postgres.Client) *Groups {
+	return &Groups{
 		postgres: postgres,
 	}
 }
 
-func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
+func (g *Groups) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error) {
 	tx, err := g.postgres.Begin(ctx)
 	if err != nil {
 		logger.Error(ctx, err)
@@ -77,7 +77,7 @@ func (g *Group) Add(ctx context.Context, entity entities.GroupAdd) (*entities.Gr
 	}, nil
 }
 
-func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
+func (g *Groups) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	query := `
 		UPDATE public.groups
 		SET name = COALESCE(NULLIF($1, ''), name)
@@ -93,7 +93,7 @@ func (g *Group) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	return nil
 }
 
-func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
+func (g *Groups) Get(ctx context.Context, entity entities.GroupGet) (*entities.Group, error) {
 	query := `
 		SELECT id, name, is_payed, created_at, updated_at, deleted_at
 		FROM public.groups
@@ -124,7 +124,7 @@ func (g *Group) Get(ctx context.Context, entity entities.GroupGet) (*entities.Gr
 	}, nil
 }
 
-func (g *Group) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) error {
+func (g *Groups) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) error {
 	query := `
 		UPDATE public.groups
 		SET deleted_at = NOW()
@@ -144,7 +144,7 @@ func (g *Group) Delete(ctx context.Context, entity entities.GroupDeleteConfirm) 
 	return nil
 }
 
-func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
+func (g *Groups) GetList(ctx context.Context, entity entities.GroupsGetList) ([]entities.Group, error) {
 	query := `
 		SELECT
 		    public.groups.id,
@@ -195,7 +195,7 @@ func (g *Group) GetList(ctx context.Context, entity entities.GroupsGetList) ([]e
 	return groups, nil
 }
 
-func (g *Group) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
+func (g *Groups) GetGroupUser(ctx context.Context, userID, groupID string) (*entities.GroupUser, error) {
 	query := `
 		-- Users groups
 		SELECT

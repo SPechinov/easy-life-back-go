@@ -1,4 +1,4 @@
-package group
+package groups
 
 import (
 	"github.com/labstack/echo/v4"
@@ -17,19 +17,19 @@ const (
 	urlGroup              = "/:groupID"
 )
 
-type restGroupController struct {
+type restGroupsController struct {
 	cfg      *config.Config
 	useCases useCases
 }
 
 func New(cfg *config.Config, useCases useCases) rest.Handler {
-	return &restGroupController{
+	return &restGroupsController{
 		cfg:      cfg,
 		useCases: useCases,
 	}
 }
 
-func (controller *restGroupController) Register(group *echo.Group) {
+func (controller *restGroupsController) Register(group *echo.Group) {
 	router := group.Group("/groups")
 	router.Use(middlewares.AuthMiddleware(controller.cfg))
 

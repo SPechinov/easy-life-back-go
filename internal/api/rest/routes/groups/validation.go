@@ -1,4 +1,4 @@
-package group
+package groups
 
 import (
 	"github.com/go-ozzo/ozzo-validation/v4"

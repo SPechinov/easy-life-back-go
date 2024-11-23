@@ -1,4 +1,4 @@
-package group
+package groups
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type codes interface {
 	DeleteCode(ctx context.Context, key string) error
 }
 
-type groupService interface {
+type groupsService interface {
 	Add(ctx context.Context, entity entities.GroupAdd) (*entities.Group, error)
 	Patch(ctx context.Context, entity entities.GroupPatch) error
 	Get(ctx context.Context, entity entities.GroupGetInfo) (*entities.Group, error)
