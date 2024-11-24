@@ -38,7 +38,3 @@ func (gn *GroupNotes) Delete(ctx context.Context, entity *entities.NoteDelete) e
 func (gn *GroupNotes) IsCreator(ctx context.Context, userID, noteID string) bool {
 	return gn.groupNotesDatabase.IsCreator(ctx, userID, noteID)
 }
-
-func (gn *GroupNotes) IsDeleted(ctx context.Context, noteID string) bool {
-	return gn.groupNotesDatabase.IsDeleted(ctx, noteID)
-}

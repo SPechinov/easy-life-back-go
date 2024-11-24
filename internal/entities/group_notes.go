@@ -1,15 +1,15 @@
 package entities
 
 type Note struct {
-	ID          string
-	Title       string
-	Info        *NoteInfo
-	GroupID     string
-	UserCreator User
-	UserUpdater User
-	CreatedAt   string
-	UpdatedAt   string
-	DeletedAt   string
+	ID        string
+	Title     string
+	Info      *NoteInfo
+	GroupID   string
+	CreatorID string
+	UpdaterID string
+	CreatedAt string
+	UpdatedAt string
+	DeletedAt *string
 }
 
 type NoteInfo struct {

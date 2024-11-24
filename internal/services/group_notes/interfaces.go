@@ -12,5 +12,4 @@ type groupNotesDatabase interface {
 	Patch(ctx context.Context, entity *entities.NotePatch) error
 	Delete(ctx context.Context, entity *entities.NoteDelete) error
 	IsCreator(ctx context.Context, userID, noteID string) bool
-	IsDeleted(ctx context.Context, noteID string) bool
 }

@@ -24,7 +24,8 @@ var appErrorMapping = map[string]*rest_error.RestError{
 	client_error.ErrUserAdminGroup.Error():     rest_error.ErrUserAdminGroup,
 	client_error.ErrGroupDeleted.Error():       rest_error.ErrGroupNotExist,
 	client_error.ErrGroupNotExists.Error():     rest_error.ErrGroupNotExist,
-	client_error.ErrNoteDeleted.Error():        rest_error.ErrNoteDeleted,
+	client_error.ErrNoteDeleted.Error():        rest_error.ErrNoteNotExists,
+	client_error.ErrNoteNotExists.Error():      rest_error.ErrNoteNotExists,
 	client_error.ErrUserNotCreatorNote.Error(): rest_error.ErrUserNotCreatorNote,
 }
 

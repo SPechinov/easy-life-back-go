@@ -19,6 +19,7 @@ const (
 	errKeyUserAdminGroup    = "userAdminGroup"
 	errKeyGroupNotExist     = "groupNotExist"
 	errKeyNoteDeleted       = "noteDeleted"
+	errKeyNoteNotExists     = "noteNotExists"
 	errKeyUserNotCreateNote = "userNotCreateNote"
 	errKeySomethingHappen   = "somethingHappen"
 )
@@ -39,5 +40,6 @@ var ErrUserAdminGroup = New(http.StatusBadRequest, errKeyUserAdminGroup)
 var ErrUserNotInGroup = New(http.StatusBadRequest, errKeyUserNotInGroup)
 var ErrGroupNotExist = New(http.StatusBadRequest, errKeyGroupNotExist)
 var ErrNoteDeleted = New(http.StatusBadRequest, errKeyNoteDeleted)
+var ErrNoteNotExists = New(http.StatusBadRequest, errKeyNoteNotExists)
 var ErrUserNotCreatorNote = New(http.StatusBadRequest, errKeyUserNotCreateNote)
 var ErrSomethingHappen = New(http.StatusInternalServerError, errKeySomethingHappen)
