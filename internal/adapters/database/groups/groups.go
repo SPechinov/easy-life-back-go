@@ -81,7 +81,7 @@ func (g *Groups) Patch(ctx context.Context, entity entities.GroupPatch) error {
 	query := `
 		UPDATE public.groups
 		SET name = COALESCE(NULLIF($1, ''), name)
-		WHERE id = $3
+		WHERE id = $3 AND deleted_at IS NULL
 	`
 
 	_, err := g.postgres.Exec(ctx, query, entity.Name, entity.ID)

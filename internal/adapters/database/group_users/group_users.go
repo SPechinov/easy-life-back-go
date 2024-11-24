@@ -40,9 +40,8 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
 		FROM public.groups_users
 
 		LEFT JOIN public.users ON public.users.id = public.groups_users.user_id
-		LEFT JOIN public.groups ON public.groups.id = public.groups_users.group_id
 		
-		WHERE public.groups_users.group_id = $1 AND public.groups.deleted_at IS NULL
+		WHERE public.groups_users.group_id = $1
 		
 	`
 
@@ -107,24 +106,9 @@ func (gu *GroupUsers) GetUsersList(ctx context.Context, entity entities.GroupGet
 
 func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInviteUser) error {
 	query := `
-		WITH 
-			-- find group
-			valid_group AS (
-        	    SELECT id
-        	    FROM public.groups
-        	    WHERE id = $1 AND deleted_at IS NULL
-        	),
-			-- find user
-			valid_user AS (
-			    SELECT id
-			    FROM public.users
-			    WHERE id = $2 AND deleted_at IS NULL
-			)
-		-- add user in group
 		INSERT INTO public.groups_users (group_id, user_id, permission)
-		SELECT valid_group.id, valid_user.id, 0
-		FROM valid_group CROSS JOIN valid_user
-	`
+		VALUES ($1, $2, $3)
+		`
 
 	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.InvitingUserID)
 	if err != nil {
@@ -150,13 +134,10 @@ func (gu *GroupUsers) InviteUser(ctx context.Context, entity entities.GroupInvit
 func (gu *GroupUsers) ExcludeUser(ctx context.Context, entity entities.GroupExcludeUser) error {
 	query := `
 		DELETE FROM public.groups_users
-		USING public.groups
 		WHERE 
-			public.groups_users.group_id = $1 
-			AND public.groups_users.user_id = $2 
-			AND public.groups_users.permission != $3
-			AND public.groups.id = public.groups_users.group_id
-			AND public.groups.deleted_at IS NULL
+		    public.groups_users.group_id = $1 
+		  	AND public.groups_users.user_id = $2
+		  	AND public.groups_users.permission != $3
 	`
 
 	res, err := gu.postgres.Exec(ctx, query, entity.GroupID, entity.ExcludingUserID, constants.DefaultAdminPermission)
