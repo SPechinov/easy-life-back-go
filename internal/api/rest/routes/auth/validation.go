@@ -2,9 +2,9 @@ package auth
 
 import (
 	"github.com/go-ozzo/ozzo-validation/v4"
-	"go-clean/internal/api/rest/utils/rest_error"
-	"go-clean/internal/constants/validation_rules"
-	"go-clean/pkg/validate"
+	"server/internal/api/rest/utils/rest_error"
+	"server/internal/constants/validation_rules"
+	"server/pkg/validate"
 )
 
 func checkError(err error) error {

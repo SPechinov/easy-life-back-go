@@ -1,18 +1,17 @@
 package users
 
-import (
-	"database/sql"
-	"time"
-)
+import "time"
 
-type dataUser struct {
-	ID        string
-	Email     sql.NullString
-	Phone     sql.NullString
-	Password  sql.RawBytes
-	FirstName string
-	LastName  sql.NullString
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt sql.NullTime
+type userData struct {
+	UserID          string
+	EmailEncrypted  *[]byte
+	PhoneEncrypted  *[]byte
+	EmailSearchable *[]byte
+	PhoneSearchable *[]byte
+	Password        []byte
+	FirstName       string
+	LastName        *string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DeletedAt       *time.Time
 }

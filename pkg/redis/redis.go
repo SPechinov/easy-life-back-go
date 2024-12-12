@@ -4,44 +4,42 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"go-clean/pkg/helpers"
+	"server/pkg/utils"
 	"time"
 )
 
 type Redis struct {
 	client *redis.Client
-	ctx    context.Context
 }
 
-type Options struct {
-	Host     string
-	Port     string
-	Password string
-	DB       int
+type Config struct {
+	Host                 string
+	Port                 string
+	Password             string
+	DB                   int
+	ConnectionAttempts   int
+	ConnectionSleepDelay time.Duration
 }
 
-func New(ctx context.Context, options *Options) (*Redis, error) {
+func New(ctx context.Context, config *Config) (*redis.Client, error) {
 	var client = redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%v:%v", options.Host, options.Port),
-		Password: options.Password,
-		DB:       options.DB,
+		Addr:     fmt.Sprintf("%v:%v", config.Host, config.Port),
+		Password: config.Password,
+		DB:       config.DB,
 	})
 
-	err := connect(ctx, client)
+	err := connect(ctx, client, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Redis{
-		ctx:    ctx,
-		client: client,
-	}, nil
+	return client, nil
 }
 
-func connect(ctx context.Context, client *redis.Client) error {
+func connect(ctx context.Context, client *redis.Client, config *Config) error {
 	fmt.Println("Redis connecting...")
 
-	err := helpers.Repeatable(
+	err := utils.Repeatable(
 		func() error {
 			fmt.Println("Redis try to connect")
 
@@ -52,8 +50,8 @@ func connect(ctx context.Context, client *redis.Client) error {
 
 			return nil
 		},
-		10,
-		2*time.Second,
+		config.ConnectionAttempts,
+		config.ConnectionSleepDelay,
 	)
 
 	if err != nil {

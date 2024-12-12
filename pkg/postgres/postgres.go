@@ -3,34 +3,24 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"go-clean/pkg/helpers"
+	"server/pkg/utils"
 	"time"
 )
 
-type Client interface {
-	Begin(ctx context.Context) (pgx.Tx, error)
-	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
-	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
-	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
-	Close()
+type Config struct {
+	Host                 string
+	Port                 string
+	User                 string
+	Password             string
+	DBName               string
+	SSLMode              bool
+	ConnectionAttempts   int
+	ConnectionSleepDelay time.Duration
 }
 
-type Options struct {
-	Host     string
-	Port     string
-	User     string
-	Password string
-	DBName   string
-	SSLMode  bool
-}
-
-func New(ctx context.Context, options *Options) (Client, error) {
-	connectionString := getConnectionString(options)
-
-	pool, err := connect(ctx, connectionString)
+func New(ctx context.Context, config *Config) (*pgxpool.Pool, error) {
+	pool, err := connect(ctx, config)
 	if err != nil {
 		return nil, err
 	}
@@ -38,11 +28,20 @@ func New(ctx context.Context, options *Options) (Client, error) {
 	return pool, nil
 }
 
-func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error) {
+func connect(ctx context.Context, options *Config) (*pgxpool.Pool, error) {
+	connectionString := utils.GetPostgresConnectionString(
+		options.User,
+		options.Password,
+		options.Host,
+		options.Port,
+		options.DBName,
+		options.SSLMode,
+	)
+
 	var pool *pgxpool.Pool
 
 	fmt.Println("Postgres connecting...")
-	err := helpers.Repeatable(func() error {
+	err := utils.Repeatable(func() error {
 		fmt.Println("Postgres try to connect")
 		config, err := pgxpool.ParseConfig(connectionString)
 		if err != nil {
@@ -66,7 +65,10 @@ func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error
 		pool = pl
 
 		return nil
-	}, 10, 2*time.Second)
+	},
+		options.ConnectionAttempts,
+		options.ConnectionSleepDelay,
+	)
 
 	if err != nil {
 		fmt.Printf("Postgres not connected: %s\n", err)
@@ -75,12 +77,4 @@ func connect(ctx context.Context, connectionString string) (*pgxpool.Pool, error
 
 	fmt.Println("Postgres connected")
 	return pool, nil
-}
-
-func getConnectionString(options *Options) string {
-	connectionString := "postgres://" + options.User + ":" + options.Password + "@" + options.Host + ":" + options.Port + "/" + options.DBName
-	if !options.SSLMode {
-		connectionString += "?sslmode=disable"
-	}
-	return connectionString
 }

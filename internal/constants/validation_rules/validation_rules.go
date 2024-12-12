@@ -14,8 +14,9 @@ const (
 	LenMinNoteDescription = 2
 	LenMaxNoteDescription = 3000
 
-	LenMinPassword      = 8
-	LenMaxPassword      = 100
-	LenRegistrationCode = 6
-	LenDeleteGroupCode  = 6
+	LenMinPassword        = 8
+	LenMaxPassword        = 50
+	LenRegistrationCode   = 6
+	LenForgotPasswordCode = 6
+	LenDeleteGroupCode    = 6
 )

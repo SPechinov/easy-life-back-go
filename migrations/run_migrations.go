@@ -7,9 +7,10 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"server/pkg/utils"
 )
 
-type Options struct {
+type Config struct {
 	Host     string
 	Port     string
 	User     string
@@ -18,9 +19,19 @@ type Options struct {
 	SSLMode  bool
 }
 
-func Run(options *Options) {
+func Run(options *Config) {
 	fmt.Println("Applying migrations...")
-	db, err := sql.Open("postgres", getConnectionString(options))
+	db, err := sql.Open(
+		"postgres",
+		utils.GetPostgresConnectionString(
+			options.User,
+			options.Password,
+			options.Host,
+			options.Port,
+			options.DBName,
+			options.SSLMode,
+		),
+	)
 	if err != nil {
 		panic("open: " + err.Error())
 	}
@@ -45,12 +56,4 @@ func Run(options *Options) {
 		panic("apply: " + err.Error())
 	}
 	fmt.Println("Applied migrations")
-}
-
-func getConnectionString(options *Options) string {
-	connectionString := "postgres://" + options.User + ":" + options.Password + "@" + options.Host + ":" + options.Port + "/" + options.DBName
-	if !options.SSLMode {
-		connectionString += "?sslmode=disable"
-	}
-	return connectionString
 }

@@ -1,195 +1,188 @@
 package auth
 
 import (
-	"context"
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"github.com/labstack/echo/v4"
-	"go-clean/internal/api/rest/utils"
-	"go-clean/internal/api/rest/utils/rest_error"
-	globalConstants "go-clean/internal/constants"
-	"go-clean/internal/entities"
-	"go-clean/pkg/helpers"
-	"go-clean/pkg/logger"
 	"net/http"
+	"server/internal/api/rest/types"
+	"server/internal/api/rest/utils/base_controller"
+	"server/internal/api/rest/utils/echo_data"
+	"server/internal/api/rest/utils/sessions"
+	"server/internal/entities"
 )
 
-func (controller *restAuthController) handlerLogin(echoCTX echo.Context, ctx context.Context, dto *LoginDTO) error {
-	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.WithPassword(ctx, dto.Password)
-
-	sessionID, accessJWT, refreshJWT, err := controller.useCases.Login(
-		ctx,
-		entities.UserLogin{
-			AuthWay: entities.UserAuthWay{
-				Email: dto.Email,
-				Phone: dto.Phone,
-			},
-			Password: dto.Password,
-		},
-	)
-
+func (c *Controller) login(props base_controller.Props[LoginDTO]) error {
+	authMethodPlain, err := c.buildAuthMethodPlainOrThrow(props.DTO.BaseAuthDTO)
 	if err != nil {
 		return err
 	}
 
-	setResponseAuthData(echoCTX, accessJWT, refreshJWT, sessionID)
-	return echoCTX.NoContent(http.StatusNoContent)
-}
-
-func (controller *restAuthController) handlerRegistration(echoCTX echo.Context, ctx context.Context, dto *RegistrationDTO) error {
-	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-
-	err := controller.useCases.Registration(
-		ctx,
-		entities.UserAdd{
-			AuthWay: entities.UserAuthWay{
-				Email: dto.Email,
-				Phone: dto.Phone,
-			},
-		},
-	)
-	if err != nil {
-		return err
+	entity := entities.Login{
+		AuthMethodPlain: *authMethodPlain,
+		Password:        props.DTO.Password,
 	}
-	return echoCTX.NoContent(http.StatusNoContent)
-}
 
-func (controller *restAuthController) handlerRegistrationConfirm(echoCTX echo.Context, ctx context.Context, dto *RegistrationConfirmDTO) error {
-	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.WithConfirmationCode(ctx, dto.Code)
-	ctx = logger.WithPassword(ctx, dto.Password)
-
-	err := controller.useCases.RegistrationConfirm(
-		ctx,
-		entities.UserAddConfirm{
-			AuthWay: entities.UserAuthWay{
-				Email: dto.Email,
-				Phone: dto.Phone,
-			},
-			FirstName: dto.FirstName,
-			Password:  dto.Password,
-			Code:      dto.Code,
-		},
-	)
-	if err != nil {
-		return err
-	}
-	return echoCTX.NoContent(http.StatusCreated)
-}
-
-func (controller *restAuthController) handlerForgotPassword(echoCTX echo.Context, ctx context.Context, dto *ForgotPasswordDTO) error {
-	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-
-	err := controller.useCases.ForgotPassword(
-		ctx,
-		entities.UserForgotPassword{
-			AuthWay: entities.UserAuthWay{
-				Email: dto.Email,
-				Phone: dto.Phone,
-			},
-		},
-	)
+	sessionData, err := c.useCases.Login(props.Logger, entity)
 	if err != nil {
 		return err
 	}
 
-	return echoCTX.NoContent(http.StatusNoContent)
+	sessionSetter := sessions.NewSessionSetter(props.EchoCTX)
+	sessionSetter.SetSessionID(sessionData.SessionID)
+	sessionSetter.SetRefreshJWT(sessionData.RefreshJWT)
+	sessionSetter.SetAccessJWT(sessionData.AccessJWT)
+
+	return props.EchoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerForgotPasswordConfirm(echoCTX echo.Context, ctx context.Context, dto *ForgotPasswordConfirmDTO) error {
-	ctx = logger.WithRestAuthData(ctx, dto.Email, dto.Phone)
-	ctx = logger.WithPassword(ctx, dto.Password)
-
-	err := controller.useCases.ForgotPasswordConfirm(
-		ctx,
-		entities.UserForgotPasswordConfirm{
-			AuthWay: entities.UserAuthWay{
-				Email: dto.Email,
-				Phone: dto.Phone,
-			},
-			Password: dto.Password,
-			Code:     dto.Code,
-		},
-	)
+func (c *Controller) registration(props base_controller.Props[RegistrationDTO]) error {
+	authMethodPlain, err := c.buildAuthMethodPlainOrThrow(props.DTO.BaseAuthDTO)
 	if err != nil {
 		return err
 	}
 
-	return echoCTX.NoContent(http.StatusNoContent)
+	entity := entities.Registration{
+		AuthMethodPlain: *authMethodPlain,
+	}
+
+	err = c.useCases.Registration(props.Logger, entity)
+	if err != nil {
+		return err
+	}
+
+	return props.EchoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerUpdateJWT(echoCTX echo.Context, ctx context.Context) error {
-	// Check UUID
-	sessionID := utils.GetRequestSessionID(echoCTX)
-	err := uuid.Validate(sessionID)
+func (c *Controller) registrationConfirm(props base_controller.Props[RegistrationConfirmDTO]) error {
+	authMethodPlain, err := c.buildAuthMethodPlainOrThrow(props.DTO.BaseAuthDTO)
 	if err != nil {
-		logger.Warn(ctx, "has not got session id")
-		return rest_error.ErrNotAuthorized
+		return err
 	}
 
-	ctx = logger.WithSessionID(ctx, sessionID)
-
-	// Check refreshJWT
-	refreshJWT := utils.GetRequestRefreshJWT(echoCTX)
-	isValid, token := helpers.IsValidJWT(controller.cfg.HTTPAuth.JWTSecretKey, refreshJWT)
-	if !isValid {
-		logger.Error(ctx, "refresh token invalid")
-		return rest_error.ErrNotAuthorized
+	entity := entities.RegistrationConfirm{
+		AuthMethodPlain: *authMethodPlain,
+		Password:        props.DTO.Password,
+		Code:            props.DTO.Code,
 	}
 
-	// Check refreshJWT data
-	userID, ok := token.Claims.(jwt.MapClaims)[globalConstants.UserIDInJWTKey].(string)
-	if !ok {
-		logger.Error(ctx, "refresh token has not got correct data")
-		return rest_error.ErrNotAuthorized
-	}
-
-	newSessionID, newAccessJWT, newRefreshJWT, err := controller.useCases.UpdateJWT(
-		ctx,
-		entities.UserUpdateJWT{
-			ID:         userID,
-			SessionID:  sessionID,
-			RefreshJWT: refreshJWT,
-		},
-	)
+	err = c.useCases.RegistrationConfirm(props.Logger, entity)
 	if err != nil {
-		return rest_error.ErrNotAuthorized
+		return err
 	}
 
-	setResponseAuthData(echoCTX, newAccessJWT, newRefreshJWT, newSessionID)
-
-	return echoCTX.NoContent(http.StatusNoContent)
+	return props.EchoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogout(echoCTX echo.Context, ctx context.Context, userID string) error {
-	// Check SessionID
-	sessionID := utils.GetRequestSessionID(echoCTX)
-	err := uuid.Validate(sessionID)
+func (c *Controller) forgotPassword(props base_controller.Props[ForgotPasswordDTO]) error {
+	authMethodPlain, err := c.buildAuthMethodPlainOrThrow(props.DTO.BaseAuthDTO)
 	if err != nil {
-		return rest_error.ErrNotAuthorized
+		return err
 	}
 
-	ctx = logger.WithSessionID(ctx, sessionID)
+	entity := entities.ForgotPassword{
+		AuthMethodPlain: *authMethodPlain,
+	}
 
-	controller.useCases.Logout(
-		ctx,
-		entities.UserLogout{
-			ID:        userID,
-			SessionID: sessionID,
-		},
-	)
+	err = c.useCases.ForgotPassword(props.Logger, entity)
+	if err != nil {
+		return err
+	}
 
-	utils.ClearRefreshJWT(echoCTX)
-	utils.ClearSessionID(echoCTX)
-	return echoCTX.NoContent(http.StatusNoContent)
+	return props.EchoCTX.NoContent(http.StatusNoContent)
 }
 
-func (controller *restAuthController) handlerLogoutAll(echoCTX echo.Context, ctx context.Context, userID string) error {
-	controller.useCases.LogoutAll(ctx, entities.UserLogoutAll{ID: userID})
+func (c *Controller) forgotPasswordConfirm(props base_controller.Props[ForgotPasswordConfirmDTO]) error {
+	authMethodPlain, err := c.buildAuthMethodPlainOrThrow(props.DTO.BaseAuthDTO)
+	if err != nil {
+		return err
+	}
 
-	utils.ClearRefreshJWT(echoCTX)
-	utils.ClearSessionID(echoCTX)
+	entity := entities.ForgotPasswordConfirm{
+		AuthMethodPlain: *authMethodPlain,
+		Code:            props.DTO.Code,
+		Password:        props.DTO.Password,
+	}
 
-	return echoCTX.NoContent(http.StatusNoContent)
+	err = c.useCases.ForgotPasswordConfirm(props.Logger, entity)
+	if err != nil {
+		return err
+	}
+
+	sessions.NewSessionCleaner(props.EchoCTX).Clean()
+	return props.EchoCTX.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) updateJWT(props base_controller.Props[types.EmptyDTO]) error {
+	sessionGetter := sessions.NewSessionGetter(props.EchoCTX)
+
+	sessionID, err := sessionGetter.GetSessionID()
+	if err != nil {
+		return err
+	}
+	props.Logger.WithField("session_id", sessionID)
+
+	refreshJWT, err := sessionGetter.GetRefreshJWT()
+	if err != nil {
+		return err
+	}
+	props.Logger.WithField("refresh_jwt", refreshJWT)
+
+	sessionData, err := c.useCases.UpdateSession(entities.UpdateSession{
+		SessionID:  sessionID,
+		RefreshJWT: refreshJWT,
+	})
+	if err != nil {
+		return err
+	}
+
+	sessionSetter := sessions.NewSessionSetter(props.EchoCTX)
+	sessionSetter.SetSessionID(sessionData.SessionID)
+	sessionSetter.SetRefreshJWT(sessionData.RefreshJWT)
+	sessionSetter.SetAccessJWT(sessionData.AccessJWT)
+
+	return props.EchoCTX.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) logout(props base_controller.Props[types.EmptyDTO]) error {
+	echoGetter := echo_data.NewGetter(props.EchoCTX)
+	userID, err := echoGetter.UserID()
+	if err != nil {
+		return err
+	}
+
+	sessionID, err := echoGetter.SessionID()
+	if err != nil {
+		return err
+	}
+
+	err = c.useCases.Logout(entities.Logout{
+		UserID:    userID,
+		SessionID: sessionID,
+	})
+	if err != nil {
+		return err
+	}
+
+	sessionSetter := sessions.NewSessionSetter(props.EchoCTX)
+	sessionSetter.ClearSessionID()
+	sessionSetter.ClearRefreshJWT()
+
+	return props.EchoCTX.NoContent(http.StatusNoContent)
+}
+
+func (c *Controller) logoutAll(props base_controller.Props[types.EmptyDTO]) error {
+	echoGetter := echo_data.NewGetter(props.EchoCTX)
+	userID, err := echoGetter.UserID()
+	if err != nil {
+		return err
+	}
+
+	err = c.useCases.LogoutAll(userID)
+	if err != nil {
+		return err
+	}
+
+	sessionSetter := sessions.NewSessionSetter(props.EchoCTX)
+	sessionSetter.ClearSessionID()
+	sessionSetter.ClearRefreshJWT()
+
+	return props.EchoCTX.NoContent(http.StatusNoContent)
 }

@@ -2,10 +2,10 @@ package auth
 
 import (
 	"github.com/labstack/echo/v4"
-	"go-clean/config"
-	"go-clean/internal/api/rest"
-	"go-clean/internal/api/rest/controllers"
-	"go-clean/internal/api/rest/middlewares"
+	"server/internal/api/rest/middlewares"
+	"server/internal/api/rest/types"
+	"server/internal/api/rest/utils/base_controller"
+	"server/internal/config"
 )
 
 const (
@@ -19,50 +19,56 @@ const (
 	urlLogoutAll             = "/logout-all"
 )
 
-type restAuthController struct {
-	useCases useCases
+type Controller struct {
 	cfg      *config.Config
+	useCases useCases
 }
 
-func New(cfg *config.Config, useCases useCases) rest.Handler {
-	return &restAuthController{cfg: cfg, useCases: useCases}
+func New(cfg *config.Config, useCases useCases) *Controller {
+	return &Controller{
+		cfg:      cfg,
+		useCases: useCases,
+	}
 }
 
-func (controller *restAuthController) Register(router *echo.Group) {
-	authRouter := router.Group("/auth")
+func (c *Controller) Register(restGroup *echo.Group) {
+	authRestGroup := restGroup.Group("/auth")
 
-	authRouter.POST(
+	authRestGroup.POST(
 		urlLogin,
-		controllers.NewControllerValidation(controller.handlerLogin, validateLoginDTO).Register,
+		base_controller.New(c.login, validateLoginDTO).Register,
 	)
-	authRouter.POST(
+	authRestGroup.POST(
 		urlRegistration,
-		controllers.NewControllerValidation(controller.handlerRegistration, validateRegistrationDTO).Register,
+		base_controller.New(c.registration, validateRegistrationDTO).Register,
 	)
-	authRouter.POST(
+	authRestGroup.POST(
 		urlRegistrationConfirm,
-		controllers.NewControllerValidation(controller.handlerRegistrationConfirm, validateRegistrationConfirmDTO).Register,
+		base_controller.New(c.registrationConfirm, validateRegistrationConfirmDTO).Register,
 	)
-	authRouter.POST(
+	authRestGroup.POST(
 		urlForgotPassword,
-		controllers.NewControllerValidation(controller.handlerForgotPassword, validateForgotPasswordDTO).Register,
+		base_controller.New(c.forgotPassword, validateForgotPasswordDTO).Register,
 	)
-	authRouter.POST(
+	authRestGroup.POST(
 		urlForgotPasswordConfirm,
-		controllers.NewControllerValidation(controller.handlerForgotPasswordConfirm, validateForgotPasswordConfirmDTO).Register,
+		base_controller.New(c.forgotPasswordConfirm, validateForgotPasswordConfirmDTO).Register,
 	)
-	authRouter.POST(
+
+	authRestGroup.POST(
 		urlUpdateJWT,
-		controllers.NewController(controller.handlerUpdateJWT).Register,
+		base_controller.New[types.EmptyDTO](c.updateJWT, nil).Register,
 	)
 
-	authRouterWithAuth := authRouter.Group("")
-	authRouterWithAuth.Use(middlewares.AuthMiddleware(controller.cfg))
+	authProtectedRestGroup := authRestGroup.Group("", middlewares.CheckAuth(c.cfg))
 
-	authRouterWithAuth.POST(
-		urlLogout, controllers.NewControllerUserID(controller.handlerLogout).Register,
+	authProtectedRestGroup.POST(
+		urlLogout,
+		base_controller.New[types.EmptyDTO](c.logout, nil).Register,
 	)
-	authRouterWithAuth.POST(
-		urlLogoutAll, controllers.NewControllerUserID(controller.handlerLogoutAll).Register,
+
+	authProtectedRestGroup.POST(
+		urlLogoutAll,
+		base_controller.New[types.EmptyDTO](c.logoutAll, nil).Register,
 	)
 }

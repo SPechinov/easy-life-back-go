@@ -1,81 +1,88 @@
 package logger
 
 import (
-	"context"
 	"github.com/sirupsen/logrus"
+	"os"
 	"runtime"
+	"server/internal/constants"
 )
 
-type contextKey string
+type Logger struct {
+	logrus *logrus.Entry
+}
 
-const logContextKey contextKey = "logrus-context"
+type Fields map[string]interface{}
 
-func Get(ctx context.Context) *logrus.Entry {
-	if ctx == nil {
-		return logrus.WithFields(logrus.Fields{})
+func New() *Logger {
+	return &Logger{
+		logrus: logrus.NewEntry(logrus.StandardLogger()),
 	}
+}
 
-	if entry, ok := ctx.Value(logContextKey).(*logrus.Entry); ok {
-		return entry
+func MustInitGlobal(env constants.Environment) {
+	switch env {
+	case constants.ENVLocal:
+		logrus.SetOutput(os.Stdout)
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.SetFormatter(&logrus.TextFormatter{
+			ForceColors:      true,
+			DisableTimestamp: true,
+		})
+	case constants.ENVDev:
+		logrus.SetOutput(os.Stdout)
+		logrus.SetLevel(logrus.DebugLevel)
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	case constants.ENVProd:
+		logrus.SetOutput(os.Stdout)
+		logrus.SetLevel(logrus.ErrorLevel)
+		logrus.SetFormatter(&logrus.JSONFormatter{})
+	default:
+		panic("Unsupported environment: " + env)
 	}
-
-	return logrus.WithFields(logrus.Fields{})
 }
 
-func Set(ctx context.Context, logger *logrus.Entry) context.Context {
-	return context.WithValue(ctx, logContextKey, logger)
+// Show logs
+
+func (logger *Logger) Trace(args ...any) {
+	logger.logrus.Trace(args)
 }
 
-func Trace(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Trace(args)
+func (logger *Logger) Debug(args ...any) {
+	logger.logrus.Debug(args)
 }
 
-func Debug(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Debug(args)
+func (logger *Logger) Print(args ...any) {
+	logger.logrus.Print(args)
 }
 
-func Print(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Print(args)
+func (logger *Logger) Info(args ...any) {
+	logger.logrus.Info(args)
 }
 
-func Info(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Info(args)
+func (logger *Logger) Warn(args ...any) {
+	logger.logrus.Warn(args)
 }
 
-func Warn(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Warn(args)
+func (logger *Logger) Warning(args ...any) {
+	logger.logrus.Warning(args)
 }
 
-func Warning(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Warning(args)
-}
-
-func Error(ctx context.Context, args ...any) {
-	l := Get(ctx)
-
+func (logger *Logger) Error(args ...any) {
 	_, file, line, ok := runtime.Caller(1)
 	if ok {
-		l = l.WithFields(logrus.Fields{
+		logger.WithFields(Fields{
 			"File": file,
 			"Line": line,
 		})
 	}
 
-	l.Error(args)
+	logger.logrus.Error(args)
 }
 
-func Fatal(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Fatal(args)
+func (logger *Logger) Fatal(args ...any) {
+	logger.logrus.Fatal(args)
 }
 
-func Panic(ctx context.Context, args ...any) {
-	l := Get(ctx)
-	l.Panic(args)
+func (logger *Logger) Panic(args ...any) {
+	logger.logrus.Panic(args)
 }
