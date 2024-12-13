@@ -24,16 +24,6 @@ func New() {
 	// Init logger
 	logger.MustInitGlobal(constants.Environment(cfg.ENV))
 
-	// Migrations
-	migrations.Run(&migrations.Config{
-		Host:     cfg.Postgres.Host,
-		Port:     cfg.Postgres.Port,
-		User:     cfg.Postgres.User,
-		Password: cfg.Postgres.Password,
-		DBName:   cfg.Postgres.DBName,
-		SSLMode:  cfg.Postgres.SSLMode,
-	})
-
 	// Run postgres
 	postgres, err := pkgpostgres.New(
 		ctx,
@@ -53,6 +43,7 @@ func New() {
 	}
 	defer postgres.Close()
 
+	// Run redis
 	redis, err := pkgredis.New(
 		ctx,
 		&pkgredis.Config{
@@ -70,6 +61,16 @@ func New() {
 	defer func() {
 		_ = redis.Close()
 	}()
+
+	// Migrations
+	migrations.Run(&migrations.Config{
+		Host:     cfg.Postgres.Host,
+		Port:     cfg.Postgres.Port,
+		User:     cfg.Postgres.User,
+		Password: cfg.Postgres.Password,
+		DBName:   cfg.Postgres.DBName,
+		SSLMode:  cfg.Postgres.SSLMode,
+	})
 
 	messageSender := composites.NewMessageSender(cfg)
 
