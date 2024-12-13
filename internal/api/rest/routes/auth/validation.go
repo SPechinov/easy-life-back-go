@@ -85,6 +85,7 @@ func validateRegistrationConfirmDTO(dto *RegistrationConfirmDTO) error {
 		),
 		validation.Field(&dto.FirstName, validation.Required, validation.RuneLength(validation_rules.LenMinFirstName, validation_rules.LenMaxFirstName)),
 		validation.Field(&dto.Password, validation.Required, validation.RuneLength(validation_rules.LenMinPassword, validation_rules.LenMaxPassword)),
+		validation.Field(&dto.CountryCode, validation.Required, validation.By(validate.CountryCode)),
 		validation.Field(&dto.Code, validation.Required, validation.RuneLength(validation_rules.LenRegistrationCode, validation_rules.LenRegistrationCode)),
 	)
 	return checkError(err)

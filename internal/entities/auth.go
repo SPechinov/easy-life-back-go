@@ -32,9 +32,10 @@ type Registration struct {
 
 type RegistrationConfirm struct {
 	AuthMethodPlain
-	FirstName string
-	Password  string
-	Code      string
+	FirstName   string
+	Password    string
+	CountryCode string
+	Code        string
 }
 
 type ForgotPassword struct {

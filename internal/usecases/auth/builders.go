@@ -28,6 +28,7 @@ func (a *Auth) buildUserCreateSpec(entity entities.RegistrationConfirm) entities
 		AuthMethodSpec: authMethod,
 		Password:       []byte(entity.Password),
 		FirstName:      entity.FirstName,
+		CountryCode:    entity.CountryCode,
 	}
 
 	return userCreateSpec

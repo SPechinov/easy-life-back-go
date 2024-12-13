@@ -16,9 +16,10 @@ type RegistrationDTO struct {
 
 type RegistrationConfirmDTO struct {
 	BaseAuthDTO
-	FirstName string `json:"firstName" form:"firstName"`
-	Password  string `json:"password" form:"password"`
-	Code      string `json:"code" form:"code"`
+	FirstName   string `json:"firstName" form:"firstName"`
+	Password    string `json:"password" form:"password"`
+	CountryCode string `json:"countryCode" form:"countryCode"`
+	Code        string `json:"code" form:"code"`
 }
 
 type ForgotPasswordDTO struct {

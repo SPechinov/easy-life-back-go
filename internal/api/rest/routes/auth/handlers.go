@@ -60,6 +60,7 @@ func (c *Controller) registrationConfirm(props base_controller.Props[Registratio
 	entity := entities.RegistrationConfirm{
 		AuthMethodPlain: *authMethodPlain,
 		Password:        props.DTO.Password,
+		CountryCode:     props.DTO.CountryCode,
 		Code:            props.DTO.Code,
 	}
 

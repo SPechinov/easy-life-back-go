@@ -16,19 +16,21 @@ type queryCreateParams struct {
 	EmailSearchable *[]byte
 	PhoneEncrypted  *[]byte
 	PhoneSearchable *[]byte
+	CountryCode     string
 }
 
 const queryCreate = `
 	INSERT INTO main.public.users (
-	   password,
-	   first_name,
-	   last_name,
-	   email_encrypted,
-	   email_searchable,
-	   phone_encrypted,
-	   phone_searchable
+	   	password,
+	   	first_name,
+	   	last_name,
+	   	email_encrypted,
+	   	email_searchable,
+	   	phone_encrypted,
+	   	phone_searchable,
+		country_code
 	) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7)
+	VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 	RETURNING 
 	    id,
 	    email_encrypted,
@@ -98,13 +100,15 @@ func (c *creator) query(ctx context.Context, params *queryCreateParams) pgx.Row 
 		params.EmailSearchable,
 		params.PhoneEncrypted,
 		params.PhoneSearchable,
+		params.CountryCode,
 	)
 }
 
 func (c *creator) parseEntityToQueryParams(entity entities.UserCreateSpec) *queryCreateParams {
 	params := queryCreateParams{
-		Password:  entity.Password,
-		FirstName: entity.FirstName,
+		Password:    entity.Password,
+		FirstName:   entity.FirstName,
+		CountryCode: entity.CountryCode,
 	}
 
 	switch entity.AuthMethodSpec.Type {

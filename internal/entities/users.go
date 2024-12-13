@@ -25,8 +25,9 @@ func (u *User) Deleted() bool {
 
 type UserCreateSpec struct {
 	AuthMethodSpec
-	Password  []byte
-	FirstName string
+	Password    []byte
+	FirstName   string
+	CountryCode string
 }
 
 type AuthMethodSpec struct {
