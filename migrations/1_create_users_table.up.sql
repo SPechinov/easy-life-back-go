@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     password BYTEA NOT NULL,
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50),
+    country_code VARCHAR(3) NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     deleted_at TIMESTAMP
